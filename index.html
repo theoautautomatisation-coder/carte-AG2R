@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Interactive - AG2R La Mondiale | Entreprises Réunion</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        /* En-tête avec logo */
+        .header {
+            background: linear-gradient(135deg, #00A651 0%, #008C45 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 24px;
+            color: #00A651;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        
+        /* Conteneur principal */
+        .container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+        
+        /* Carte */
+        #map {
+            flex: 1;
+            height: 100%;
+        }
+        
+        /* Panneau latéral */
+        .sidebar {
+            width: 350px;
+            background: white;
+            overflow-y: auto;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .legend-marker {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 3px rgba(0,0,0,0.3);
+        }
+        
+        .status-a-voir { background: #FF6B6B; }
+        .status-visite { background: #FFA500; }
+        .status-signe { background: #4CAF50; }
+        
+        /* Liste des entreprises */
+        .company-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .company-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .company-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .company-item.selected {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .company-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .company-address {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .company-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        /* Popup personnalisé */
+        .custom-popup {
+            min-width: 250px;
+        }
+        
+        .popup-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00A651;
+        }
+        
+        .popup-info {
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .popup-label {
+            font-weight: 600;
+            color: #666;
+            display: inline-block;
+            width: 120px;
+        }
+        
+        .status-selector {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .status-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .status-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.2s;
+        }
+        
+        .status-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-a-voir { background: #FF6B6B; }
+        .btn-visite { background: #FFA500; }
+        .btn-signe { background: #4CAF50; }
+        
+        /* Loading */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00A651;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 40%;
+            }
+            
+            #map {
+                height: 60%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- En-tête -->
+    <div class="header">
+        <div class="logo-container">
+            <div class="logo">AG2R La Mondiale</div>
+            <h1>Cartographie Entreprises - La Réunion</h1>
+        </div>
+        <div class="stats">
+            <div class="stat-item">
+                <span>📍</span>
+                <span id="total-count">0</span> entreprises
+            </div>
+            <div class="stat-item">
+                <span>🔴</span>
+                <span id="a-voir-count">0</span> à voir
+            </div>
+            <div class="stat-item">
+                <span>🟠</span>
+                <span id="visite-count">0</span> visité
+            </div>
+            <div class="stat-item">
+                <span>🟢</span>
+                <span id="signe-count">0</span> signé
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conteneur principal -->
+    <div class="container">
+        <!-- Carte -->
+        <div id="map"></div>
+        
+        <!-- Panneau latéral -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Légende</h2>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-marker status-a-voir"></div>
+                        <span>À voir</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker status-visite"></div>
+                        <span>Visité</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker status-signe"></div>
+                        <span>Signé</span>
+                    </div>
+                </div>
+            </div>
+            <div class="company-list" id="company-list"></div>
+        </div>
+    </div>
+    
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Chargement des données...</p>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // ============================================
+        // CONFIGURATION - REMPLACEZ PAR VOTRE GOOGLE SHEET
+        // ============================================
+        
+        // INSTRUCTIONS POUR OBTENIR L'URL :
+        // 1. Ouvrez votre Google Sheet
+        // 2. Cliquez sur "Partager" en haut à droite
+        // 3. Changez "Accès restreint" en "Toute personne disposant du lien"
+        // 4. Copiez l'ID du sheet (la partie entre /d/ et /edit dans l'URL)
+        // 5. Remplacez VOTRE_SHEET_ID ci-dessous
+        
+        // URL CSV publique du Google Sheet (Publié sur le Web)
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0I_yJ0jj-Cz6OcNZsbttL1bSIwPA7E_R4JyGx8g715cQGbvxqMhQa1zTVvfEZkp1yUrPtlvlDvpMi/pub?gid=1768684000&single=true&output=csv';
+        
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        
+        let map;
+        let markers = {};
+        let companies = [];
+        let statuses = {};  // Stockage des statuts dans localStorage
+        
+        // Charger les statuts depuis localStorage
+        function loadStatuses() {
+            const saved = localStorage.getItem('company_statuses');
+            return saved ? JSON.parse(saved) : {};
+        }
+        
+        // Sauvegarder les statuts dans localStorage
+        function saveStatuses() {
+            localStorage.setItem('company_statuses', JSON.stringify(statuses));
+        }
+        
+        // ============================================
+        // INITIALISATION DE LA CARTE
+        // ============================================
+        
+        function initMap() {
+            // Créer la carte centrée sur La Réunion
+            map = L.map('map').setView([-21.1151, 55.5364], 10);
+            
+            // Ajouter la couche OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+        }
+        
+        // ============================================
+        // CHARGEMENT DES DONNÉES
+        // ============================================
+        
+        async function loadData() {
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const csvText = await response.text();
+                
+                // Parser le CSV
+                companies = parseCSV(csvText);
+                
+                // Charger les statuts sauvegardés
+                statuses = loadStatuses();
+                
+                // Initialiser les statuts manquants
+                companies.forEach(company => {
+                    if (!statuses[company.siren]) {
+                        statuses[company.siren] = 'a-voir';
+                    }
+                });
+                
+                saveStatuses();
+                
+                // Afficher sur la carte
+                displayMarkers();
+                displayCompanyList();
+                updateStats();
+                
+                // Cacher le loading
+                document.getElementById('loading').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Erreur de chargement:', error);
+                document.getElementById('loading').innerHTML = `
+                    <p style="color: red;">❌ Erreur de chargement</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Vérifiez que votre Google Sheet est partagé publiquement.</p>
+                `;
+            }
+        }
+        
+        // ============================================
+        // PARSER CSV
+        // ============================================
+        
+        function parseCSV(csv) {
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = parseCSVLine(lines[i]);
+                const company = {};
+                
+                headers.forEach((header, index) => {
+                    company[header.toLowerCase().replace(/ /g, '_')] = values[index] || '';
+                });
+                
+                // Vérifier que les coordonnées sont valides
+                const lat = parseFloat(company.latitude);
+                const lng = parseFloat(company.longitude);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    company.lat = lat;
+                    company.lng = lng;
+                    data.push(company);
+                }
+            }
+            
+            return data;
+        }
+        
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim().replace(/^"|"$/g, ''));
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim().replace(/^"|"$/g, ''));
+            return result;
+        }
+        
+        // ============================================
+        // AFFICHAGE DES MARQUEURS
+        // ============================================
+        
+        function getMarkerColor(status) {
+            const colors = {
+                'a-voir': '#FF6B6B',
+                'visite': '#FFA500',
+                'signe': '#4CAF50'
+            };
+            return colors[status] || '#FF6B6B';
+        }
+        
+        function createCustomIcon(status) {
+            const color = getMarkerColor(status);
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `
+                    <div style="
+                        width: 25px;
+                        height: 25px;
+                        background: ${color};
+                        border: 3px solid white;
+                        border-radius: 50%;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                    "></div>
+                `,
+                iconSize: [25, 25],
+                iconAnchor: [12, 12]
+            });
+        }
+        
+        function displayMarkers() {
+            // Effacer les marqueurs existants
+            Object.values(markers).forEach(marker => map.removeLayer(marker));
+            markers = {};
+            
+            // Créer les nouveaux marqueurs
+            companies.forEach(company => {
+                const status = statuses[company.siren] || 'a-voir';
+                const icon = createCustomIcon(status);
+                
+                const marker = L.marker([company.lat, company.lng], { icon })
+                    .addTo(map);
+                
+                // Popup
+                const popupContent = createPopupContent(company, status);
+                marker.bindPopup(popupContent, { maxWidth: 300 });
+                
+                // Stocker le marqueur
+                markers[company.siren] = marker;
+                
+                // Event: clic sur marqueur
+                marker.on('click', () => selectCompany(company.siren));
+            });
+        }
+        
+        function createPopupContent(company, status) {
+            return `
+                <div class="custom-popup">
+                    <div class="popup-title">${company['dénomination_/_nom']}</div>
+                    <div class="popup-info">
+                        <span class="popup-label">📍 Adresse:</span><br>
+                        ${company['adresse_du_siège'] || 'Non renseignée'}
+                    </div>
+                    <div class="popup-info">
+                        <span class="popup-label">🏢 Forme:</span>
+                        ${company.forme_juridique || '-'}
+                    </div>
+                    <div class="popup-info">
+                        <span class="popup-label">🔢 SIREN:</span>
+                        ${company.siren || '-'}
+                    </div>
+                    <div class="popup-info">
+                        <span class="popup-label">📅 Début activité:</span>
+                        ${company['début_d_activité'] || '-'}
+                    </div>
+                    <div class="status-selector">
+                        <strong>Changer le statut:</strong>
+                        <div class="status-buttons">
+                            <button class="status-btn btn-a-voir" onclick="changeStatus('${company.siren}', 'a-voir')">
+                                À voir
+                            </button>
+                            <button class="status-btn btn-visite" onclick="changeStatus('${company.siren}', 'visite')">
+                                Visité
+                            </button>
+                            <button class="status-btn btn-signe" onclick="changeStatus('${company.siren}', 'signe')">
+                                Signé
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ============================================
+        // LISTE DES ENTREPRISES
+        // ============================================
+        
+        function displayCompanyList() {
+            const list = document.getElementById('company-list');
+            list.innerHTML = '';
+            
+            companies.forEach(company => {
+                const status = statuses[company.siren] || 'a-voir';
+                const statusText = {
+                    'a-voir': 'À voir',
+                    'visite': 'Visité',
+                    'signe': 'Signé'
+                };
+                
+                const item = document.createElement('div');
+                item.className = 'company-item';
+                item.dataset.siren = company.siren;
+                item.innerHTML = `
+                    <div class="company-name">${company['dénomination_/_nom']}</div>
+                    <div class="company-address">${company['adresse_du_siège'] || 'Adresse non renseignée'}</div>
+                    <span class="company-status status-${status}">${statusText[status]}</span>
+                `;
+                
+                item.onclick = () => {
+                    map.setView([company.lat, company.lng], 15);
+                    markers[company.siren].openPopup();
+                    selectCompany(company.siren);
+                };
+                
+                list.appendChild(item);
+            });
+        }
+        
+        function selectCompany(siren) {
+            document.querySelectorAll('.company-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            const item = document.querySelector(`[data-siren="${siren}"]`);
+            if (item) {
+                item.classList.add('selected');
+                item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+        
+        // ============================================
+        // CHANGEMENT DE STATUT
+        // ============================================
+        
+        function changeStatus(siren, newStatus) {
+            statuses[siren] = newStatus;
+            saveStatuses();
+            
+            // Mettre à jour le marqueur
+            const company = companies.find(c => c.siren === siren);
+            if (company && markers[siren]) {
+                const newIcon = createCustomIcon(newStatus);
+                markers[siren].setIcon(newIcon);
+                
+                // Mettre à jour le popup
+                const popupContent = createPopupContent(company, newStatus);
+                markers[siren].setPopupContent(popupContent);
+            }
+            
+            // Mettre à jour la liste
+            displayCompanyList();
+            updateStats();
+            
+            // Notification visuelle
+            showNotification(`Statut mis à jour: ${newStatus.replace('-', ' ')}`);
+        }
+        
+        // Rendre la fonction globale pour les boutons
+        window.changeStatus = changeStatus;
+        
+        // ============================================
+        // STATISTIQUES
+        // ============================================
+        
+        function updateStats() {
+            const counts = {
+                'a-voir': 0,
+                'visite': 0,
+                'signe': 0
+            };
+            
+            Object.values(statuses).forEach(status => {
+                counts[status]++;
+            });
+            
+            document.getElementById('total-count').textContent = companies.length;
+            document.getElementById('a-voir-count').textContent = counts['a-voir'];
+            document.getElementById('visite-count').textContent = counts['visite'];
+            document.getElementById('signe-count').textContent = counts['signe'];
+        }
+        
+        // ============================================
+        // NOTIFICATION
+        // ============================================
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+        
+        // ============================================
+        // INITIALISATION
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            loadData();
+        });
+        
+        // Auto-refresh toutes les 5 minutes
+        setInterval(loadData, 5 * 60 * 1000);
+    </script>
+    
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
+</body>
+</html>
