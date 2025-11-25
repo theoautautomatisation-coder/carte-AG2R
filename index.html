@@ -20,9 +20,9 @@
             background: #f5f5f5;
         }
         
-        /* En-tête avec logo */
+        /* En-tête avec couleurs AG2R */
         .header {
-            background: linear-gradient(135deg, #00A651 0%, #008C45 100%);
+            background: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%);
             color: white;
             padding: 20px 30px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -42,9 +42,16 @@
             padding: 8px 15px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 24px;
-            color: #00A651;
+            font-size: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .logo-ag2r {
+            color: #00BCD4;
+        }
+        
+        .logo-mondiale {
+            color: #333;
         }
         
         .header h1 {
@@ -122,9 +129,9 @@
             box-shadow: 0 0 3px rgba(0,0,0,0.3);
         }
         
-        .status-a-voir { background: #FF6B6B; }
-        .status-visite { background: #FFA500; }
-        .status-signe { background: #4CAF50; }
+        .status-a-voir { background: #FF5252; }
+        .status-visite { background: #FFB300; }
+        .status-signe { background: #00BCD4; }
         
         /* Liste des entreprises */
         .company-list {
@@ -144,8 +151,8 @@
         }
         
         .company-item.selected {
-            background: #e3f2fd;
-            border-left: 4px solid #2196F3;
+            background: #e0f7fa;
+            border-left: 4px solid #00BCD4;
         }
         
         .company-name {
@@ -181,7 +188,7 @@
             color: #333;
             margin-bottom: 10px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #00A651;
+            border-bottom: 2px solid #00BCD4;
         }
         
         .popup-info {
@@ -194,6 +201,28 @@
             color: #666;
             display: inline-block;
             width: 120px;
+        }
+        
+        .popup-rcs {
+            margin-top: 10px;
+        }
+        
+        .btn-rcs {
+            display: inline-block;
+            background: #00BCD4;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-rcs:hover {
+            background: #0097A7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         
         .status-selector {
@@ -225,9 +254,9 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         
-        .btn-a-voir { background: #FF6B6B; }
-        .btn-visite { background: #FFA500; }
-        .btn-signe { background: #4CAF50; }
+        .btn-a-voir { background: #FF5252; }
+        .btn-visite { background: #FFB300; }
+        .btn-signe { background: #00BCD4; }
         
         /* Loading */
         .loading {
@@ -241,7 +270,7 @@
         
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #00A651;
+            border-top: 4px solid #00BCD4;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -268,6 +297,17 @@
             #map {
                 height: 60%;
             }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -275,7 +315,9 @@
     <!-- En-tête -->
     <div class="header">
         <div class="logo-container">
-            <div class="logo">AG2R La Mondiale</div>
+            <div class="logo">
+                <span class="logo-ag2r">AG2R</span> <span class="logo-mondiale">La Mondiale</span>
+            </div>
             <h1>Cartographie Entreprises - La Réunion</h1>
         </div>
         <div class="stats">
@@ -292,7 +334,7 @@
                 <span id="visite-count">0</span> visité
             </div>
             <div class="stat-item">
-                <span>🟢</span>
+                <span>🔵</span>
                 <span id="signe-count">0</span> signé
             </div>
         </div>
@@ -337,18 +379,11 @@
     
     <script>
         // ============================================
-        // CONFIGURATION - REMPLACEZ PAR VOTRE GOOGLE SHEET
+        // CONFIGURATION - LIEN CSV CORRIGÉ
         // ============================================
         
-        // INSTRUCTIONS POUR OBTENIR L'URL :
-        // 1. Ouvrez votre Google Sheet
-        // 2. Cliquez sur "Partager" en haut à droite
-        // 3. Changez "Accès restreint" en "Toute personne disposant du lien"
-        // 4. Copiez l'ID du sheet (la partie entre /d/ et /edit dans l'URL)
-        // 5. Remplacez VOTRE_SHEET_ID ci-dessous
-        
-        // URL CSV publique du Google Sheet (Publié sur le Web)
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0I_yJ0jj-Cz6OcNZsbttL1bSIwPA7E_R4JyGx8g715cQGbvxqMhQa1zTVvfEZkp1yUrPtlvlDvpMi/pub?gid=1768684000&single=true&output=csv';
+        // URL CSV publique du Google Sheet - GID CORRIGÉ : 1672140182
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0I_yJ0jj-Cz6OcNZsbttL1bSIwPA7E_R4JyGx8g715cQGbvxqMhQa1zTVvfEZkp1yUrPtlvlDvpMi/pub?gid=1672140182&single=true&output=csv';
         
         // ============================================
         // VARIABLES GLOBALES
@@ -357,17 +392,17 @@
         let map;
         let markers = {};
         let companies = [];
-        let statuses = {};  // Stockage des statuts dans localStorage
+        let statuses = {};
         
         // Charger les statuts depuis localStorage
         function loadStatuses() {
-            const saved = localStorage.getItem('company_statuses');
+            const saved = localStorage.getItem('ag2r_company_statuses');
             return saved ? JSON.parse(saved) : {};
         }
         
         // Sauvegarder les statuts dans localStorage
         function saveStatuses() {
-            localStorage.setItem('company_statuses', JSON.stringify(statuses));
+            localStorage.setItem('ag2r_company_statuses', JSON.stringify(statuses));
         }
         
         // ============================================
@@ -375,10 +410,8 @@
         // ============================================
         
         function initMap() {
-            // Créer la carte centrée sur La Réunion
             map = L.map('map').setView([-21.1151, 55.5364], 10);
             
-            // Ajouter la couche OpenStreetMap
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
@@ -391,19 +424,30 @@
         
         async function loadData() {
             try {
+                console.log('🔄 Chargement des données depuis:', SHEET_CSV_URL);
+                
                 const response = await fetch(SHEET_CSV_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
                 const csvText = await response.text();
+                console.log('📄 CSV reçu, longueur:', csvText.length);
+                console.log('📄 Premières lignes:', csvText.substring(0, 500));
                 
                 // Parser le CSV
                 companies = parseCSV(csvText);
+                console.log(`✅ ${companies.length} entreprises parsées avec coordonnées valides`);
                 
                 // Charger les statuts sauvegardés
                 statuses = loadStatuses();
                 
                 // Initialiser les statuts manquants
                 companies.forEach(company => {
-                    if (!statuses[company.siren]) {
-                        statuses[company.siren] = 'a-voir';
+                    const id = company.siren || company.id || Math.random().toString();
+                    if (!statuses[id]) {
+                        statuses[id] = 'a-voir';
                     }
                 });
                 
@@ -418,21 +462,56 @@
                 document.getElementById('loading').style.display = 'none';
                 
             } catch (error) {
-                console.error('Erreur de chargement:', error);
+                console.error('❌ Erreur de chargement:', error);
                 document.getElementById('loading').innerHTML = `
                     <p style="color: red;">❌ Erreur de chargement</p>
-                    <p style="font-size: 14px; margin-top: 10px;">Vérifiez que votre Google Sheet est partagé publiquement.</p>
+                    <p style="font-size: 14px; margin-top: 10px;">${error.message}</p>
+                    <p style="font-size: 12px; margin-top: 10px;">Vérifiez que la feuille Export_MyMaps est publiée sur le web.</p>
                 `;
             }
         }
         
         // ============================================
-        // PARSER CSV
+        // PARSER CSV - VERSION ROBUSTE
         // ============================================
         
         function parseCSV(csv) {
             const lines = csv.split('\n');
-            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            
+            // Nettoyer les en-têtes (supprimer espaces invisibles, guillemets, etc.)
+            const rawHeaders = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            
+            // Créer une version normalisée des en-têtes pour la recherche
+            const headers = rawHeaders.map(h => h.toLowerCase().replace(/\s+/g, '_').replace(/['']/g, '_'));
+            
+            console.log('📋 En-têtes bruts:', rawHeaders);
+            console.log('📋 En-têtes normalisés:', headers);
+            
+            // Trouver les indices des colonnes importantes
+            const findColumn = (keywords) => {
+                for (let keyword of keywords) {
+                    const index = headers.findIndex(h => h.includes(keyword));
+                    if (index !== -1) return index;
+                }
+                return -1;
+            };
+            
+            const colName = findColumn(['dénomination', 'denomination', 'nom', 'name', 'entreprise']);
+            const colAddress = findColumn(['adresse', 'address', 'siège', 'siege']);
+            const colSiren = findColumn(['siren']);
+            const colLat = findColumn(['latitude', 'lat']);
+            const colLng = findColumn(['longitude', 'lng', 'long']);
+            const colForme = findColumn(['forme', 'juridique']);
+            const colDebut = findColumn(['début', 'debut', 'activité', 'activite', 'date']);
+            const colRcs = findColumn(['rcs', 'lien']);
+            
+            console.log('📍 Colonnes détectées:', {
+                nom: colName !== -1 ? rawHeaders[colName] : 'NON TROUVÉ',
+                adresse: colAddress !== -1 ? rawHeaders[colAddress] : 'NON TROUVÉ',
+                siren: colSiren !== -1 ? rawHeaders[colSiren] : 'NON TROUVÉ',
+                latitude: colLat !== -1 ? rawHeaders[colLat] : 'NON TROUVÉ',
+                longitude: colLng !== -1 ? rawHeaders[colLng] : 'NON TROUVÉ'
+            });
             
             const data = [];
             
@@ -440,41 +519,64 @@
                 if (!lines[i].trim()) continue;
                 
                 const values = parseCSVLine(lines[i]);
-                const company = {};
                 
-                headers.forEach((header, index) => {
-                    company[header.toLowerCase().replace(/ /g, '_')] = values[index] || '';
-                });
+                // Extraire les coordonnées
+                let latStr = colLat !== -1 ? String(values[colLat] || '') : '';
+                let lngStr = colLng !== -1 ? String(values[colLng] || '') : '';
                 
-                // Vérifier que les coordonnées sont valides
-                // CORRECTION : Remplacer les virgules par des points (format français -> anglais)
-                let latStr = String(company.latitude || '').replace(',', '.');
-                let lngStr = String(company.longitude || '').replace(',', '.');
+                // CORRECTION : Remplacer les virgules par des points (format français)
+                latStr = latStr.replace(',', '.').trim();
+                lngStr = lngStr.replace(',', '.').trim();
                 
                 let lat = parseFloat(latStr);
                 let lng = parseFloat(lngStr);
                 
-                // CORRECTION : Vérifier si les coordonnées sont inversées
-                // Pour La Réunion : lat doit être négative (~-21) et lng positive (~55)
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    // Si latitude est positive et longitude négative, elles sont inversées
-                    if (lat > 0 && lng < 0) {
-                        const temp = lat;
-                        lat = lng;
-                        lng = temp;
-                        console.log('Coordonnées inversées détectées et corrigées');
-                    }
-                    
-                    // Vérifier que les coordonnées sont dans la zone de La Réunion
-                    if (lat >= -22 && lat <= -20 && lng >= 54 && lng <= 56) {
-                        company.lat = lat;
-                        company.lng = lng;
-                        data.push(company);
-                        console.log(`✅ ${company['dénomination_/_nom']}: (${lat}, ${lng})`);
-                    } else {
-                        console.warn(`⚠️ Coordonnées hors zone La Réunion ignorées: ${company['dénomination_/_nom']} (${lat}, ${lng})`);
-                    }
+                // Vérifier la validité
+                if (isNaN(lat) || isNaN(lng)) {
+                    console.warn(`⚠️ Ligne ${i}: Coordonnées invalides (${latStr}, ${lngStr})`);
+                    continue;
                 }
+                
+                // Correction si coordonnées inversées
+                if (lat > 0 && lng < 0) {
+                    const temp = lat;
+                    lat = lng;
+                    lng = temp;
+                    console.log(`🔄 Ligne ${i}: Coordonnées inversées corrigées`);
+                }
+                
+                // Vérifier zone La Réunion
+                if (lat < -22 || lat > -20 || lng < 54 || lng > 56) {
+                    console.warn(`⚠️ Ligne ${i}: Hors zone La Réunion (${lat}, ${lng})`);
+                    continue;
+                }
+                
+                // Extraire le lien RCS
+                let rcsLink = colRcs !== -1 ? String(values[colRcs] || '') : '';
+                // Si c'est une formule HYPERLINK, extraire l'URL
+                if (rcsLink.includes('http')) {
+                    const match = rcsLink.match(/https?:\/\/[^\s"]+/);
+                    if (match) rcsLink = match[0];
+                }
+                
+                const company = {
+                    name: colName !== -1 ? values[colName] || '' : '',
+                    address: colAddress !== -1 ? values[colAddress] || '' : '',
+                    siren: colSiren !== -1 ? values[colSiren] || '' : '',
+                    forme: colForme !== -1 ? values[colForme] || '' : '',
+                    debut: colDebut !== -1 ? values[colDebut] || '' : '',
+                    rcsLink: rcsLink,
+                    lat: lat,
+                    lng: lng
+                };
+                
+                // Générer un lien RCS si manquant mais SIREN présent
+                if (!company.rcsLink && company.siren) {
+                    company.rcsLink = `https://annuaire-entreprises.data.gouv.fr/entreprise/${company.siren.replace(/\s/g, '')}`;
+                }
+                
+                data.push(company);
+                console.log(`✅ ${company.name}: (${lat}, ${lng})`);
             }
             
             return data;
@@ -508,11 +610,11 @@
         
         function getMarkerColor(status) {
             const colors = {
-                'a-voir': '#FF6B6B',
-                'visite': '#FFA500',
-                'signe': '#4CAF50'
+                'a-voir': '#FF5252',
+                'visite': '#FFB300',
+                'signe': '#00BCD4'
             };
-            return colors[status] || '#FF6B6B';
+            return colors[status] || '#FF5252';
         }
         
         function createCustomIcon(status) {
@@ -539,37 +641,51 @@
             Object.values(markers).forEach(marker => map.removeLayer(marker));
             markers = {};
             
+            console.log(`🗺️ Création de ${companies.length} marqueurs...`);
+            
             // Créer les nouveaux marqueurs
-            companies.forEach(company => {
-                const status = statuses[company.siren] || 'a-voir';
+            companies.forEach((company, index) => {
+                const id = company.siren || `company_${index}`;
+                const status = statuses[id] || 'a-voir';
                 const icon = createCustomIcon(status);
                 
-                const marker = L.marker([company.lat, company.lng], { icon })
-                    .addTo(map);
-                
-                // Popup
-                const popupContent = createPopupContent(company, status);
-                marker.bindPopup(popupContent, { maxWidth: 300 });
-                
-                // Stocker le marqueur
-                markers[company.siren] = marker;
-                
-                // Event: clic sur marqueur
-                marker.on('click', () => selectCompany(company.siren));
+                try {
+                    const marker = L.marker([company.lat, company.lng], { icon })
+                        .addTo(map);
+                    
+                    const popupContent = createPopupContent(company, status, id);
+                    marker.bindPopup(popupContent, { maxWidth: 300 });
+                    
+                    markers[id] = marker;
+                    
+                    marker.on('click', () => selectCompany(id));
+                    
+                } catch (e) {
+                    console.error(`❌ Erreur création marqueur pour ${company.name}:`, e);
+                }
             });
+            
+            console.log(`✅ ${Object.keys(markers).length} marqueurs créés`);
         }
         
-        function createPopupContent(company, status) {
+        function createPopupContent(company, status, id) {
+            const rcsButton = company.rcsLink ? 
+                `<div class="popup-rcs">
+                    <a href="${company.rcsLink}" target="_blank" class="btn-rcs">
+                        🔗 Voir sur Annuaire Entreprises
+                    </a>
+                </div>` : '';
+            
             return `
                 <div class="custom-popup">
-                    <div class="popup-title">${company['dénomination_/_nom']}</div>
+                    <div class="popup-title">${company.name || 'Sans nom'}</div>
                     <div class="popup-info">
                         <span class="popup-label">📍 Adresse:</span><br>
-                        ${company['adresse_du_siège'] || 'Non renseignée'}
+                        ${company.address || 'Non renseignée'}
                     </div>
                     <div class="popup-info">
                         <span class="popup-label">🏢 Forme:</span>
-                        ${company.forme_juridique || '-'}
+                        ${company.forme || '-'}
                     </div>
                     <div class="popup-info">
                         <span class="popup-label">🔢 SIREN:</span>
@@ -577,18 +693,19 @@
                     </div>
                     <div class="popup-info">
                         <span class="popup-label">📅 Début activité:</span>
-                        ${company['début_d_activité'] || '-'}
+                        ${company.debut || '-'}
                     </div>
+                    ${rcsButton}
                     <div class="status-selector">
                         <strong>Changer le statut:</strong>
                         <div class="status-buttons">
-                            <button class="status-btn btn-a-voir" onclick="changeStatus('${company.siren}', 'a-voir')">
+                            <button class="status-btn btn-a-voir" onclick="changeStatus('${id}', 'a-voir')">
                                 À voir
                             </button>
-                            <button class="status-btn btn-visite" onclick="changeStatus('${company.siren}', 'visite')">
+                            <button class="status-btn btn-visite" onclick="changeStatus('${id}', 'visite')">
                                 Visité
                             </button>
-                            <button class="status-btn btn-signe" onclick="changeStatus('${company.siren}', 'signe')">
+                            <button class="status-btn btn-signe" onclick="changeStatus('${id}', 'signe')">
                                 Signé
                             </button>
                         </div>
@@ -605,39 +722,41 @@
             const list = document.getElementById('company-list');
             list.innerHTML = '';
             
-            companies.forEach(company => {
-                const status = statuses[company.siren] || 'a-voir';
-                const statusText = {
-                    'a-voir': 'À voir',
-                    'visite': 'Visité',
-                    'signe': 'Signé'
-                };
+            const statusText = {
+                'a-voir': 'À voir',
+                'visite': 'Visité',
+                'signe': 'Signé'
+            };
+            
+            companies.forEach((company, index) => {
+                const id = company.siren || `company_${index}`;
+                const status = statuses[id] || 'a-voir';
                 
                 const item = document.createElement('div');
                 item.className = 'company-item';
-                item.dataset.siren = company.siren;
+                item.dataset.id = id;
                 item.innerHTML = `
-                    <div class="company-name">${company['dénomination_/_nom']}</div>
-                    <div class="company-address">${company['adresse_du_siège'] || 'Adresse non renseignée'}</div>
+                    <div class="company-name">${company.name || 'Sans nom'}</div>
+                    <div class="company-address">${company.address || 'Adresse non renseignée'}</div>
                     <span class="company-status status-${status}">${statusText[status]}</span>
                 `;
                 
                 item.onclick = () => {
                     map.setView([company.lat, company.lng], 15);
-                    markers[company.siren].openPopup();
-                    selectCompany(company.siren);
+                    markers[id].openPopup();
+                    selectCompany(id);
                 };
                 
                 list.appendChild(item);
             });
         }
         
-        function selectCompany(siren) {
+        function selectCompany(id) {
             document.querySelectorAll('.company-item').forEach(item => {
                 item.classList.remove('selected');
             });
             
-            const item = document.querySelector(`[data-siren="${siren}"]`);
+            const item = document.querySelector(`[data-id="${id}"]`);
             if (item) {
                 item.classList.add('selected');
                 item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -648,19 +767,20 @@
         // CHANGEMENT DE STATUT
         // ============================================
         
-        function changeStatus(siren, newStatus) {
-            statuses[siren] = newStatus;
+        function changeStatus(id, newStatus) {
+            statuses[id] = newStatus;
             saveStatuses();
             
             // Mettre à jour le marqueur
-            const company = companies.find(c => c.siren === siren);
-            if (company && markers[siren]) {
+            const index = companies.findIndex(c => (c.siren || `company_${companies.indexOf(c)}`) === id);
+            const company = companies[index];
+            
+            if (company && markers[id]) {
                 const newIcon = createCustomIcon(newStatus);
-                markers[siren].setIcon(newIcon);
+                markers[id].setIcon(newIcon);
                 
-                // Mettre à jour le popup
-                const popupContent = createPopupContent(company, newStatus);
-                markers[siren].setPopupContent(popupContent);
+                const popupContent = createPopupContent(company, newStatus, id);
+                markers[id].setPopupContent(popupContent);
             }
             
             // Mettre à jour la liste
@@ -671,7 +791,6 @@
             showNotification(`Statut mis à jour: ${newStatus.replace('-', ' ')}`);
         }
         
-        // Rendre la fonction globale pour les boutons
         window.changeStatus = changeStatus;
         
         // ============================================
@@ -679,13 +798,11 @@
         // ============================================
         
         function updateStats() {
-            const counts = {
-                'a-voir': 0,
-                'visite': 0,
-                'signe': 0
-            };
+            const counts = { 'a-voir': 0, 'visite': 0, 'signe': 0 };
             
-            Object.values(statuses).forEach(status => {
+            companies.forEach((company, index) => {
+                const id = company.siren || `company_${index}`;
+                const status = statuses[id] || 'a-voir';
                 counts[status]++;
             });
             
@@ -705,7 +822,7 @@
                 position: fixed;
                 top: 100px;
                 right: 20px;
-                background: #4CAF50;
+                background: #00BCD4;
                 color: white;
                 padding: 15px 25px;
                 border-radius: 8px;
@@ -737,25 +854,13 @@
     
     <style>
         @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
         }
     </style>
 </body>
