@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Interactive - AG2R La Mondiale | Entreprises Réunion</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        /* En-tête AG2R */
+        .header {
+            background: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%);
+            color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .logo-ag2r { color: #00BCD4; }
+        .logo-mondiale { color: #333; }
+        
+        .header h1 { font-size: 20px; font-weight: 600; }
+        
+        .stats {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        
+        /* Conteneur principal */
+        .container {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+        
+        #map { flex: 1; height: 100%; }
+        
+        /* Panneau latéral */
+        .sidebar {
+            width: 380px;
+            background: white;
+            overflow-y: auto;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        
+        .legend-marker {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 3px rgba(0,0,0,0.3);
+        }
+        
+        .status-a-voir { background: #FF5252; }
+        .status-visite { background: #FFB300; }
+        .status-signe { background: #00BCD4; }
+        
+        /* Recherche */
+        .search-box {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .search-input:focus {
+            border-color: #00BCD4;
+            box-shadow: 0 0 5px rgba(0,188,212,0.3);
+        }
+        
+        /* Liste des entreprises */
+        .company-list { flex: 1; overflow-y: auto; }
+        
+        .company-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .company-item:hover { background: #f8f9fa; }
+        
+        .company-item.selected {
+            background: #e0f7fa;
+            border-left: 4px solid #00BCD4;
+        }
+        
+        .company-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        .company-address {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        
+        .company-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .company-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .company-contact-icons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .contact-icon {
+            font-size: 12px;
+            opacity: 0.3;
+        }
+        
+        .contact-icon.active { opacity: 1; }
+        
+        /* Popup */
+        .custom-popup {
+            min-width: 320px;
+            max-width: 400px;
+        }
+        
+        .popup-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00BCD4;
+        }
+        
+        .popup-section {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .popup-section:last-of-type { border-bottom: none; }
+        
+        .popup-section-title {
+            font-weight: 600;
+            font-size: 12px;
+            color: #00BCD4;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .popup-info {
+            margin-bottom: 6px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .popup-label {
+            font-weight: 600;
+            color: #666;
+            display: inline-block;
+            min-width: 100px;
+        }
+        
+        /* Section Contact */
+        .contact-section {
+            background: #f0fdf4;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        
+        .contact-section.no-data { background: #fef3c7; }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .contact-item:last-child { margin-bottom: 0; }
+        
+        .contact-icon-large {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .contact-value { flex: 1; }
+        
+        .contact-value a {
+            color: #00BCD4;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .contact-value a:hover { text-decoration: underline; }
+        
+        .phone-link { color: #4CAF50 !important; }
+        
+        /* Contexte IA */
+        .ia-context {
+            background: #e3f2fd;
+            border-left: 3px solid #2196F3;
+            padding: 10px 12px;
+            margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 12px;
+            color: #1565C0;
+            font-style: italic;
+        }
+        
+        .ia-context-title {
+            font-weight: 600;
+            font-style: normal;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 5px;
+            color: #1976D2;
+        }
+        
+        /* Boutons */
+        .btn-call {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-right: 8px;
+        }
+        
+        .btn-call:hover {
+            background: #388E3C;
+            transform: translateY(-2px);
+        }
+        
+        .btn-website {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-right: 8px;
+        }
+        
+        .btn-website:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+        
+        .btn-rcs {
+            display: inline-block;
+            background: #00BCD4;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-rcs:hover {
+            background: #0097A7;
+            transform: translateY(-2px);
+        }
+        
+        .status-selector {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .status-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .status-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.2s;
+        }
+        
+        .status-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-a-voir { background: #FF5252; }
+        .btn-visite { background: #FFB300; }
+        .btn-signe { background: #00BCD4; }
+        
+        /* Badge IA */
+        .ia-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        /* Loading */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00BCD4;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .sidebar { width: 100%; height: 40%; }
+            #map { height: 60%; }
+            .header { flex-direction: column; gap: 10px; text-align: center; }
+            .stats { justify-content: center; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- En-tête -->
+    <div class="header">
+        <div class="logo-container">
+            <div class="logo">
+                <span class="logo-ag2r">AG2R</span> <span class="logo-mondiale">La Mondiale</span>
+            </div>
+            <h1>Cartographie Entreprises - La Réunion</h1>
+        </div>
+        <div class="stats">
+            <div class="stat-item">
+                <span>📍</span>
+                <span id="total-count">0</span> entreprises
+            </div>
+            <div class="stat-item">
+                <span>🔴</span>
+                <span id="a-voir-count">0</span> à voir
+            </div>
+            <div class="stat-item">
+                <span>🟠</span>
+                <span id="visite-count">0</span> visité
+            </div>
+            <div class="stat-item">
+                <span>🔵</span>
+                <span id="signe-count">0</span> signé
+            </div>
+            <div class="stat-item">
+                <span>📞</span>
+                <span id="phone-count">0</span> tél.
+            </div>
+            <div class="stat-item">
+                <span>🤖</span>
+                <span id="ia-count">0</span> IA
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conteneur principal -->
+    <div class="container">
+        <div id="map"></div>
+        
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Légende</h2>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-marker status-a-voir"></div>
+                        <span>À voir</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker status-visite"></div>
+                        <span>Visité</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker status-signe"></div>
+                        <span>Signé</span>
+                    </div>
+                </div>
+            </div>
+            <div class="search-box">
+                <input type="text" class="search-input" id="search-input" placeholder="🔍 Rechercher une entreprise...">
+            </div>
+            <div class="company-list" id="company-list"></div>
+        </div>
+    </div>
+    
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Chargement des données...</p>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // ============================================
+        // CONFIGURATION - GID: 1491563666
+        // ============================================
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0I_yJ0jj-Cz6OcNZsbttL1bSIwPA7E_R4JyGx8g715cQGbvxqMhQa1zTVvfEZkp1yUrPtlvlDvpMi/pub?gid=1491563666&single=true&output=csv';
+        
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        let map;
+        let markers = {};
+        let companies = [];
+        let filteredCompanies = [];
+        let statuses = {};
+        
+        function loadStatuses() {
+            const saved = localStorage.getItem('ag2r_statuses_v3');
+            return saved ? JSON.parse(saved) : {};
+        }
+        
+        function saveStatuses() {
+            localStorage.setItem('ag2r_statuses_v3', JSON.stringify(statuses));
+        }
+        
+        // ============================================
+        // INITIALISATION CARTE
+        // ============================================
+        function initMap() {
+            map = L.map('map').setView([-21.1151, 55.5364], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
+        }
+        
+        // ============================================
+        // CHARGEMENT DONNÉES
+        // ============================================
+        async function loadData() {
+            try {
+                console.log('🔄 Chargement...');
+                const response = await fetch(SHEET_CSV_URL);
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const csvText = await response.text();
+                companies = parseCSV(csvText);
+                filteredCompanies = [...companies];
+                
+                console.log(`✅ ${companies.length} entreprises chargées`);
+                
+                statuses = loadStatuses();
+                companies.forEach((c, i) => {
+                    const id = c.siren || `c_${i}`;
+                    if (!statuses[id]) statuses[id] = 'a-voir';
+                });
+                saveStatuses();
+                
+                displayMarkers();
+                displayCompanyList();
+                updateStats();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                document.getElementById('loading').innerHTML = `
+                    <p style="color:red;">❌ Erreur de chargement</p>
+                    <p style="font-size:14px;margin-top:10px;">${error.message}</p>
+                    <p style="font-size:12px;margin-top:10px;">Vérifiez que Export_MyMaps est publié sur le web.</p>
+                `;
+            }
+        }
+        
+        // ============================================
+        // PARSER CSV ENRICHI IA
+        // ============================================
+        function parseCSV(csv) {
+            const lines = csv.split('\n');
+            const rawHeaders = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            const headers = rawHeaders.map(h => h.toLowerCase().replace(/\s+/g, '_').replace(/['']/g, '_'));
+            
+            console.log('📋 En-têtes:', rawHeaders);
+            
+            const findCol = (keywords) => {
+                for (let kw of keywords) {
+                    const idx = headers.findIndex(h => h.includes(kw.toLowerCase()));
+                    if (idx !== -1) return idx;
+                }
+                return -1;
+            };
+            
+            // Colonnes de base
+            const colName = findCol(['dénomination', 'denomination', 'nom']);
+            const colAddress = findCol(['adresse', 'siège']);
+            const colSiren = findCol(['siren']);
+            const colLat = findCol(['latitude']);
+            const colLng = findCol(['longitude']);
+            const colForme = findCol(['forme']);
+            const colDebut = findCol(['début', 'debut']);
+            const colRcs = findCol(['lien_rcs', 'rcs']);
+            const colStatut = findCol(['statut']);
+            
+            // Colonnes IA
+            const colTel = findCol(['téléphone', 'telephone']);
+            const colSite = findCol(['site_web', 'site']);
+            const colContexte = findCol(['contexte_ia', 'contexte']);
+            const colReps = findCol(['représentants', 'representants']);
+            
+            console.log('📞 Colonnes IA:', {
+                tel: colTel !== -1 ? rawHeaders[colTel] : '❌',
+                site: colSite !== -1 ? rawHeaders[colSite] : '❌',
+                contexte: colContexte !== -1 ? rawHeaders[colContexte] : '❌',
+                reps: colReps !== -1 ? rawHeaders[colReps] : '❌'
+            });
+            
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = parseCSVLine(lines[i]);
+                
+                let latStr = colLat !== -1 ? String(values[colLat] || '').replace(',', '.').trim() : '';
+                let lngStr = colLng !== -1 ? String(values[colLng] || '').replace(',', '.').trim() : '';
+                
+                let lat = parseFloat(latStr);
+                let lng = parseFloat(lngStr);
+                
+                if (isNaN(lat) || isNaN(lng)) continue;
+                
+                // Correction si inversées
+                if (lat > 0 && lng < 0) { [lat, lng] = [lng, lat]; }
+                
+                // Zone La Réunion
+                if (lat < -22 || lat > -20 || lng < 54 || lng > 56) continue;
+                
+                // Lien RCS
+                let rcsLink = colRcs !== -1 ? String(values[colRcs] || '') : '';
+                if (rcsLink.includes('http')) {
+                    const m = rcsLink.match(/https?:\/\/[^\s"]+/);
+                    if (m) rcsLink = m[0];
+                }
+                
+                // Données IA
+                let tel = colTel !== -1 ? String(values[colTel] || '').trim() : '';
+                let site = colSite !== -1 ? String(values[colSite] || '').trim() : '';
+                let contexte = colContexte !== -1 ? String(values[colContexte] || '').trim() : '';
+                let reps = colReps !== -1 ? String(values[colReps] || '').trim() : '';
+                
+                // Nettoyer "Non trouvé"
+                if (tel.toLowerCase().includes('non trouvé') || tel === 'null') tel = '';
+                if (site.toLowerCase().includes('non trouvé') || site === 'null') site = '';
+                if (contexte === 'null') contexte = '';
+                
+                const company = {
+                    name: colName !== -1 ? values[colName] || '' : '',
+                    address: colAddress !== -1 ? values[colAddress] || '' : '',
+                    siren: colSiren !== -1 ? values[colSiren] || '' : '',
+                    forme: colForme !== -1 ? values[colForme] || '' : '',
+                    debut: colDebut !== -1 ? values[colDebut] || '' : '',
+                    statut: colStatut !== -1 ? values[colStatut] || '' : '',
+                    rcsLink: rcsLink,
+                    telephone: tel,
+                    siteWeb: site,
+                    contexteIA: contexte,
+                    representants: reps,
+                    lat: lat,
+                    lng: lng
+                };
+                
+                if (!company.rcsLink && company.siren) {
+                    company.rcsLink = `https://annuaire-entreprises.data.gouv.fr/entreprise/${company.siren.replace(/\s/g, '')}`;
+                }
+                
+                data.push(company);
+            }
+            
+            return data;
+        }
+        
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let c of line) {
+                if (c === '"') inQuotes = !inQuotes;
+                else if (c === ',' && !inQuotes) {
+                    result.push(current.trim().replace(/^"|"$/g, ''));
+                    current = '';
+                } else current += c;
+            }
+            result.push(current.trim().replace(/^"|"$/g, ''));
+            return result;
+        }
+        
+        // ============================================
+        // MARQUEURS
+        // ============================================
+        function getMarkerColor(status) {
+            return { 'a-voir': '#FF5252', 'visite': '#FFB300', 'signe': '#00BCD4' }[status] || '#FF5252';
+        }
+        
+        function createIcon(status, hasPhone) {
+            const color = getMarkerColor(status);
+            const indicator = hasPhone ? '<div style="position:absolute;top:-5px;right:-5px;background:#4CAF50;border-radius:50%;width:12px;height:12px;font-size:8px;display:flex;align-items:center;justify-content:center;">📞</div>' : '';
+            
+            return L.divIcon({
+                className: 'marker',
+                html: `<div style="position:relative;"><div style="width:24px;height:24px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,0.3);"></div>${indicator}</div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+        }
+        
+        function displayMarkers() {
+            Object.values(markers).forEach(m => map.removeLayer(m));
+            markers = {};
+            
+            filteredCompanies.forEach((c, i) => {
+                const id = c.siren || `c_${i}`;
+                const status = statuses[id] || 'a-voir';
+                const hasPhone = c.telephone && c.telephone.length > 0;
+                
+                try {
+                    const marker = L.marker([c.lat, c.lng], { icon: createIcon(status, hasPhone) }).addTo(map);
+                    marker.bindPopup(createPopup(c, status, id), { maxWidth: 400 });
+                    marker.on('click', () => selectCompany(id));
+                    markers[id] = marker;
+                } catch (e) {}
+            });
+        }
+        
+        // ============================================
+        // POPUP ENRICHI IA
+        // ============================================
+        function createPopup(c, status, id) {
+            const hasContact = c.telephone || c.siteWeb;
+            
+            // Section Contact
+            let contactHtml = '';
+            if (hasContact) {
+                contactHtml = `<div class="contact-section">
+                    <div class="popup-section-title">📞 Contact</div>
+                    ${c.telephone ? `<div class="contact-item"><span class="contact-icon-large">📱</span><div class="contact-value"><a href="tel:${c.telephone}" class="phone-link">${c.telephone}</a></div></div>` : ''}
+                    ${c.siteWeb ? `<div class="contact-item"><span class="contact-icon-large">🌐</span><div class="contact-value"><a href="${c.siteWeb.startsWith('http') ? c.siteWeb : 'https://' + c.siteWeb}" target="_blank">${c.siteWeb.replace(/^https?:\/\//, '').substring(0, 30)}...</a></div></div>` : ''}
+                </div>`;
+            } else {
+                contactHtml = `<div class="contact-section no-data"><div class="popup-section-title">📞 Contact</div><div style="color:#92400e;font-size:12px;">⚠️ Aucun contact trouvé</div></div>`;
+            }
+            
+            // Contexte IA
+            let iaHtml = '';
+            if (c.contexteIA) {
+                iaHtml = `<div class="ia-context"><div class="ia-context-title"><span class="ia-badge">🤖 IA</span> Raisonnement</div>${c.contexteIA}</div>`;
+            }
+            
+            // Représentants
+            let repsHtml = '';
+            if (c.representants) {
+                repsHtml = `<div class="popup-info"><span class="popup-label">👔 Dirigeants:</span><span style="font-size:12px;">${c.representants.substring(0, 80)}${c.representants.length > 80 ? '...' : ''}</span></div>`;
+            }
+            
+            // Boutons
+            let btns = '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">';
+            if (c.telephone) btns += `<a href="tel:${c.telephone}" class="btn-call">📞 Appeler</a>`;
+            if (c.siteWeb) btns += `<a href="${c.siteWeb.startsWith('http') ? c.siteWeb : 'https://' + c.siteWeb}" target="_blank" class="btn-website">🌐 Site</a>`;
+            if (c.rcsLink) btns += `<a href="${c.rcsLink}" target="_blank" class="btn-rcs">📋 RCS</a>`;
+            btns += '</div>';
+            
+            return `
+                <div class="custom-popup">
+                    <div class="popup-title">${c.name || 'Sans nom'}</div>
+                    ${contactHtml}
+                    ${iaHtml}
+                    <div class="popup-section">
+                        <div class="popup-section-title">📍 Informations</div>
+                        <div class="popup-info"><span class="popup-label">Adresse:</span><br><span style="font-size:12px;">${c.address || '-'}</span></div>
+                        ${repsHtml}
+                        <div class="popup-info"><span class="popup-label">🏢 Forme:</span> ${c.forme || '-'}</div>
+                        <div class="popup-info"><span class="popup-label">🔢 SIREN:</span> ${c.siren || '-'}</div>
+                        <div class="popup-info"><span class="popup-label">📅 Début:</span> ${c.debut || '-'}</div>
+                    </div>
+                    ${btns}
+                    <div class="status-selector">
+                        <strong>Changer le statut:</strong>
+                        <div class="status-buttons">
+                            <button class="status-btn btn-a-voir" onclick="changeStatus('${id}','a-voir')">À voir</button>
+                            <button class="status-btn btn-visite" onclick="changeStatus('${id}','visite')">Visité</button>
+                            <button class="status-btn btn-signe" onclick="changeStatus('${id}','signe')">Signé</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ============================================
+        // LISTE ENTREPRISES
+        // ============================================
+        function displayCompanyList() {
+            const list = document.getElementById('company-list');
+            list.innerHTML = '';
+            
+            const statusText = { 'a-voir': 'À voir', 'visite': 'Visité', 'signe': 'Signé' };
+            
+            filteredCompanies.forEach((c, i) => {
+                const id = c.siren || `c_${i}`;
+                const status = statuses[id] || 'a-voir';
+                const hasPhone = c.telephone && c.telephone.length > 0;
+                const hasSite = c.siteWeb && c.siteWeb.length > 0;
+                const hasIA = c.contexteIA && c.contexteIA.length > 0;
+                
+                const item = document.createElement('div');
+                item.className = 'company-item';
+                item.dataset.id = id;
+                item.innerHTML = `
+                    <div class="company-name">${c.name || 'Sans nom'}</div>
+                    <div class="company-address">${c.address || '-'}</div>
+                    <div class="company-meta">
+                        <span class="company-status status-${status}">${statusText[status]}</span>
+                        <div class="company-contact-icons">
+                            <span class="contact-icon ${hasPhone ? 'active' : ''}" title="${hasPhone ? c.telephone : 'Pas de tél.'}">📞</span>
+                            <span class="contact-icon ${hasSite ? 'active' : ''}" title="${hasSite ? 'Site web' : 'Pas de site'}">🌐</span>
+                            <span class="contact-icon ${hasIA ? 'active' : ''}" title="${hasIA ? 'Enrichi IA' : ''}">🤖</span>
+                        </div>
+                    </div>
+                `;
+                
+                item.onclick = () => {
+                    map.setView([c.lat, c.lng], 15);
+                    markers[id].openPopup();
+                    selectCompany(id);
+                };
+                
+                list.appendChild(item);
+            });
+        }
+        
+        function selectCompany(id) {
+            document.querySelectorAll('.company-item').forEach(i => i.classList.remove('selected'));
+            const item = document.querySelector(`[data-id="${id}"]`);
+            if (item) {
+                item.classList.add('selected');
+                item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+        
+        // ============================================
+        // RECHERCHE
+        // ============================================
+        function setupSearch() {
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase().trim();
+                filteredCompanies = q === '' ? [...companies] : companies.filter(c =>
+                    (c.name && c.name.toLowerCase().includes(q)) ||
+                    (c.address && c.address.toLowerCase().includes(q)) ||
+                    (c.siren && c.siren.includes(q)) ||
+                    (c.representants && c.representants.toLowerCase().includes(q))
+                );
+                displayMarkers();
+                displayCompanyList();
+            });
+        }
+        
+        // ============================================
+        // CHANGEMENT STATUT
+        // ============================================
+        function changeStatus(id, newStatus) {
+            statuses[id] = newStatus;
+            saveStatuses();
+            
+            const c = companies.find(x => (x.siren || `c_${companies.indexOf(x)}`) === id);
+            if (c && markers[id]) {
+                const hasPhone = c.telephone && c.telephone.length > 0;
+                markers[id].setIcon(createIcon(newStatus, hasPhone));
+                markers[id].setPopupContent(createPopup(c, newStatus, id));
+            }
+            
+            displayCompanyList();
+            updateStats();
+            showNotification(`Statut: ${newStatus.replace('-', ' ')}`);
+        }
+        
+        window.changeStatus = changeStatus;
+        
+        // ============================================
+        // STATISTIQUES
+        // ============================================
+        function updateStats() {
+            const counts = { 'a-voir': 0, 'visite': 0, 'signe': 0 };
+            let phoneCount = 0, iaCount = 0;
+            
+            companies.forEach((c, i) => {
+                const id = c.siren || `c_${i}`;
+                counts[statuses[id] || 'a-voir']++;
+                if (c.telephone) phoneCount++;
+                if (c.contexteIA) iaCount++;
+            });
+            
+            document.getElementById('total-count').textContent = companies.length;
+            document.getElementById('a-voir-count').textContent = counts['a-voir'];
+            document.getElementById('visite-count').textContent = counts['visite'];
+            document.getElementById('signe-count').textContent = counts['signe'];
+            document.getElementById('phone-count').textContent = phoneCount;
+            document.getElementById('ia-count').textContent = iaCount;
+        }
+        
+        // ============================================
+        // NOTIFICATION
+        // ============================================
+        function showNotification(msg) {
+            const n = document.createElement('div');
+            n.style.cssText = 'position:fixed;top:100px;right:20px;background:#00BCD4;color:white;padding:15px 25px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:10000;animation:slideIn 0.3s ease;';
+            n.textContent = msg;
+            document.body.appendChild(n);
+            setTimeout(() => {
+                n.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => n.remove(), 300);
+            }, 2000);
+        }
+        
+        // ============================================
+        // INIT
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            loadData();
+            setupSearch();
+        });
+        
+        // Auto-refresh 5 min
+        setInterval(loadData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
