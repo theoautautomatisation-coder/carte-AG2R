@@ -158,6 +158,11 @@
             border-left: 4px solid #00BCD4;
         }
         
+        .company-item.archived {
+            opacity: 0.3;
+            background: #fafafa;
+        }
+        
         .company-name {
             font-weight: 600;
             color: #333;
@@ -359,6 +364,30 @@
             transform: translateY(-2px);
         }
         
+        /* NOUVEAU: Bouton Archiver */
+        .btn-archive {
+            display: inline-block;
+            background: #f44336;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .btn-archive:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+        }
+        
         .status-selector {
             margin-top: 15px;
             padding-top: 15px;
@@ -448,6 +477,56 @@
             from { transform: translateX(0); opacity: 1; }
             to { transform: translateX(400px); opacity: 0; }
         }
+
+        /* Animation de suppression */
+        @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.8); }
+        }
+        
+        .company-item.removing {
+            animation: fadeOut 0.3s ease forwards;
+        }
+
+        /* Toggle archives */
+        .archive-toggle {
+            padding: 10px 20px;
+            background: #fff3e0;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-checkbox {
+            width: 40px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-checkbox.active {
+            background: #00BCD4;
+        }
+
+        .toggle-checkbox::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+
+        .toggle-checkbox.active::after {
+            left: 22px;
+        }
     </style>
 </head>
 <body>
@@ -484,6 +563,10 @@
                 <span>🤖</span>
                 <span id="ia-count">0</span> IA
             </div>
+            <div class="stat-item">
+                <span>🗄️</span>
+                <span id="archived-count">0</span> archivées
+            </div>
         </div>
     </div>
     
@@ -509,6 +592,13 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- NOUVEAU: Toggle pour afficher/masquer archives -->
+            <div class="archive-toggle">
+                <div class="toggle-checkbox" id="archive-toggle" onclick="toggleArchiveView()"></div>
+                <span id="archive-toggle-label">Afficher les archives</span>
+            </div>
+            
             <div class="search-box">
                 <input type="text" class="search-input" id="search-input" placeholder="🔍 Rechercher une entreprise...">
             </div>
@@ -531,6 +621,9 @@
         // ============================================
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0I_yJ0jj-Cz6OcNZsbttL1bSIwPA7E_R4JyGx8g715cQGbvxqMhQa1zTVvfEZkp1yUrPtlvlDvpMi/pub?gid=1491563666&single=true&output=csv';
         
+        // URL du Web App Google Apps Script pour archivage
+        const ARCHIVE_WEBAPP_URL = 'VOTRE_URL_WEB_APP_ICI'; // À remplacer après déploiement
+        
         // ============================================
         // VARIABLES GLOBALES
         // ============================================
@@ -539,6 +632,8 @@
         let companies = [];
         let filteredCompanies = [];
         let statuses = {};
+        let archivedCompanies = new Set(); // NOUVEAU: Stockage local des archives
+        let showArchived = false; // NOUVEAU: Toggle affichage archives
         
         function loadStatuses() {
             const saved = localStorage.getItem('ag2r_statuses_v3');
@@ -547,6 +642,16 @@
         
         function saveStatuses() {
             localStorage.setItem('ag2r_statuses_v3', JSON.stringify(statuses));
+        }
+
+        // NOUVEAU: Gestion du stockage des archives
+        function loadArchivedCompanies() {
+            const saved = localStorage.getItem('ag2r_archived_v1');
+            return saved ? new Set(JSON.parse(saved)) : new Set();
+        }
+
+        function saveArchivedCompanies() {
+            localStorage.setItem('ag2r_archived_v1', JSON.stringify([...archivedCompanies]));
         }
         
         // ============================================
@@ -577,6 +682,8 @@
                 console.log(`✅ ${companies.length} entreprises chargées`);
                 
                 statuses = loadStatuses();
+                archivedCompanies = loadArchivedCompanies(); // NOUVEAU
+                
                 companies.forEach((c, i) => {
                     const id = c.siren || `c_${i}`;
                     if (!statuses[id]) statuses[id] = 'a-voir';
@@ -747,6 +854,10 @@
             
             filteredCompanies.forEach((c, i) => {
                 const id = c.siren || `c_${i}`;
+                
+                // NOUVEAU: Ne pas afficher les entreprises archivées (sauf si toggle activé)
+                if (archivedCompanies.has(id) && !showArchived) return;
+                
                 const status = statuses[id] || 'a-voir';
                 const hasPhone = c.telephone && c.telephone.length > 0;
                 
@@ -760,10 +871,11 @@
         }
         
         // ============================================
-        // POPUP ENRICHI IA
+        // POPUP ENRICHI IA + BOUTON ARCHIVER
         // ============================================
         function createPopup(c, status, id) {
             const hasContact = c.telephone || c.siteWeb;
+            const isArchived = archivedCompanies.has(id);
             
             // Section Contact
             let contactHtml = '';
@@ -796,6 +908,11 @@
             if (c.rcsLink) btns += `<a href="${c.rcsLink}" target="_blank" class="btn-rcs">📋 RCS</a>`;
             btns += '</div>';
             
+            // NOUVEAU: Bouton Archiver (sauf si déjà archivée)
+            const archiveButton = !isArchived ? 
+                `<button class="btn-archive" onclick="archiveCompany('${id}')">🗄️ Archiver cette entreprise</button>` : 
+                `<div style="padding:10px;background:#f5f5f5;border-radius:6px;text-align:center;margin-top:15px;color:#999;">✅ Entreprise archivée</div>`;
+            
             return `
                 <div class="custom-popup">
                     <div class="popup-title">${c.name || 'Sans nom'}</div>
@@ -818,9 +935,103 @@
                             <button class="status-btn btn-signe" onclick="changeStatus('${id}','signe')">Signé</button>
                         </div>
                     </div>
+                    ${archiveButton}
                 </div>
             `;
         }
+        
+        // ============================================
+        // NOUVELLE FONCTION: ARCHIVAGE
+        // ============================================
+        async function archiveCompany(id) {
+            const company = companies.find(c => (c.siren || `c_${companies.indexOf(c)}`) === id);
+            if (!company) return;
+            
+            const confirmMsg = `Voulez-vous vraiment archiver "${company.name}" ?\n\nL'entreprise sera masquée de la carte et envoyée vers la feuille "Archive" dans Excel.`;
+            
+            if (!confirm(confirmMsg)) return;
+            
+            try {
+                // 1. Ajouter à la liste locale des archives
+                archivedCompanies.add(id);
+                saveArchivedCompanies();
+                
+                // 2. Masquer visuellement
+                if (markers[id]) {
+                    map.removeLayer(markers[id]);
+                    delete markers[id];
+                }
+                
+                // 3. Mettre à jour l'affichage
+                displayCompanyList();
+                updateStats();
+                
+                // 4. Envoyer vers Google Sheets (via Web App)
+                await sendToArchiveSheet(company);
+                
+                showNotification(`✅ "${company.name}" archivée avec succès`);
+                
+            } catch (error) {
+                console.error('Erreur archivage:', error);
+                showNotification(`❌ Erreur lors de l'archivage: ${error.message}`);
+            }
+        }
+        
+        // NOUVEAU: Envoi vers Google Sheets Archive
+        async function sendToArchiveSheet(company) {
+            if (!ARCHIVE_WEBAPP_URL || ARCHIVE_WEBAPP_URL === 'VOTRE_URL_WEB_APP_ICI') {
+                console.warn('⚠️ URL Web App non configurée - archivage local uniquement');
+                return;
+            }
+            
+            const payload = {
+                action: 'archive',
+                data: {
+                    name: company.name,
+                    address: company.address,
+                    siren: company.siren,
+                    representants: company.representants,
+                    telephone: company.telephone,
+                    siteWeb: company.siteWeb,
+                    contexteIA: company.contexteIA,
+                    forme: company.forme,
+                    debut: company.debut,
+                    statut: company.statut,
+                    rcsLink: company.rcsLink,
+                    archivedDate: new Date().toLocaleString('fr-FR')
+                }
+            };
+            
+            const response = await fetch(ARCHIVE_WEBAPP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            console.log('✅ Entreprise envoyée vers Archive Google Sheets');
+        }
+        
+        // NOUVEAU: Toggle affichage archives
+        function toggleArchiveView() {
+            showArchived = !showArchived;
+            const toggle = document.getElementById('archive-toggle');
+            const label = document.getElementById('archive-toggle-label');
+            
+            if (showArchived) {
+                toggle.classList.add('active');
+                label.textContent = 'Masquer les archives';
+            } else {
+                toggle.classList.remove('active');
+                label.textContent = 'Afficher les archives';
+            }
+            
+            displayMarkers();
+            displayCompanyList();
+        }
+        
+        window.toggleArchiveView = toggleArchiveView;
+        window.archiveCompany = archiveCompany;
         
         // ============================================
         // LISTE ENTREPRISES
@@ -837,12 +1048,16 @@
                 const hasPhone = c.telephone && c.telephone.length > 0;
                 const hasSite = c.siteWeb && c.siteWeb.length > 0;
                 const hasIA = c.contexteIA && c.contexteIA.length > 0;
+                const isArchived = archivedCompanies.has(id);
+                
+                // NOUVEAU: Ne pas afficher si archivée et toggle désactivé
+                if (isArchived && !showArchived) return;
                 
                 const item = document.createElement('div');
-                item.className = 'company-item';
+                item.className = `company-item ${isArchived ? 'archived' : ''}`;
                 item.dataset.id = id;
                 item.innerHTML = `
-                    <div class="company-name">${c.name || 'Sans nom'}</div>
+                    <div class="company-name">${c.name || 'Sans nom'} ${isArchived ? '🗄️' : ''}</div>
                     <div class="company-address">${c.address || '-'}</div>
                     <div class="company-meta">
                         <span class="company-status status-${status}">${statusText[status]}</span>
@@ -856,7 +1071,9 @@
                 
                 item.onclick = () => {
                     map.setView([c.lat, c.lng], 15);
-                    markers[id].openPopup();
+                    if (markers[id]) {
+                        markers[id].openPopup();
+                    }
                     selectCompany(id);
                 };
                 
@@ -920,17 +1137,22 @@
             
             companies.forEach((c, i) => {
                 const id = c.siren || `c_${i}`;
-                counts[statuses[id] || 'a-voir']++;
-                if (c.telephone) phoneCount++;
-                if (c.contexteIA) iaCount++;
+                
+                // NOUVEAU: Ne compter que les non-archivées dans les stats principales
+                if (!archivedCompanies.has(id)) {
+                    counts[statuses[id] || 'a-voir']++;
+                    if (c.telephone) phoneCount++;
+                    if (c.contexteIA) iaCount++;
+                }
             });
             
-            document.getElementById('total-count').textContent = companies.length;
+            document.getElementById('total-count').textContent = companies.length - archivedCompanies.size;
             document.getElementById('a-voir-count').textContent = counts['a-voir'];
             document.getElementById('visite-count').textContent = counts['visite'];
             document.getElementById('signe-count').textContent = counts['signe'];
             document.getElementById('phone-count').textContent = phoneCount;
             document.getElementById('ia-count').textContent = iaCount;
+            document.getElementById('archived-count').textContent = archivedCompanies.size; // NOUVEAU
         }
         
         // ============================================
