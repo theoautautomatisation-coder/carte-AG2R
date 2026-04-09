@@ -8,177 +8,330 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            font-family: 'DM Sans', 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
         }
         
-        /* En-tête AG2R */
+        /* ===== EN-TÊTE ===== */
         .header {
-            background: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%);
+            background: linear-gradient(135deg, #0097A7 0%, #006064 100%);
             color: white;
-            padding: 15px 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 100;
         }
         
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
         }
         
         .logo {
             background: white;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 18px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: -0.3px;
         }
         
-        .logo-ag2r { color: #00BCD4; }
-        .logo-mondiale { color: #333; }
+        .logo-ag2r { color: #0097A7; }
+        .logo-mondiale { color: #1a1a2e; }
         
-        .header h1 { font-size: 20px; font-weight: 600; }
+        .header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+        
+        .user-badge .avatar {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
         
         .stats {
             display: flex;
-            gap: 12px;
-            font-size: 13px;
+            gap: 8px;
+            font-size: 12px;
             flex-wrap: wrap;
         }
         
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 5px;
-            background: rgba(255,255,255,0.2);
-            padding: 5px 12px;
-            border-radius: 20px;
+            gap: 4px;
+            background: rgba(255,255,255,0.12);
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-weight: 500;
         }
         
-        /* Conteneur principal */
+        /* ===== CONTENEUR PRINCIPAL ===== */
         .container {
             display: flex;
-            height: calc(100vh - 70px);
+            height: calc(100vh - 56px);
         }
         
         #map { flex: 1; height: 100%; }
         
-        /* Panneau latéral */
+        /* ===== PANNEAU LATÉRAL ===== */
         .sidebar {
             width: 380px;
             background: white;
             overflow-y: auto;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: -4px 0 20px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
         }
         
         .sidebar-header {
-            padding: 15px 20px;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e0e0e0;
+            padding: 14px 18px;
+            background: #f8f9fb;
+            border-bottom: 1px solid #e8eaed;
         }
         
         .sidebar-header h2 {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 13px;
+            color: #5f6368;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
         
         .legend {
             display: flex;
-            gap: 15px;
+            gap: 14px;
             flex-wrap: wrap;
         }
         
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
         }
         
         .legend-marker {
-            width: 16px;
-            height: 16px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             border: 2px solid white;
-            box-shadow: 0 0 3px rgba(0,0,0,0.3);
+            box-shadow: 0 0 4px rgba(0,0,0,0.2);
         }
         
-        .status-a-voir { background: #FF5252; }
-        .status-visite { background: #FFB300; }
-        .status-signe { background: #00BCD4; }
+        .status-a-voir { background: #e53935; }
+        .status-visite { background: #FB8C00; }
+        .status-signe { background: #00897B; }
         
-        /* Recherche */
+        /* ===== FILTRES ===== */
+        .filters-section {
+            padding: 12px 18px;
+            background: #f8f9fb;
+            border-bottom: 1px solid #e8eaed;
+        }
+        
+        .filters-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .filters-toggle h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #5f6368;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .filters-toggle .arrow {
+            transition: transform 0.2s;
+            font-size: 12px;
+            color: #5f6368;
+        }
+        
+        .filters-toggle .arrow.open { transform: rotate(180deg); }
+        
+        .filters-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .filters-body.open {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .filter-group {
+            margin-top: 10px;
+        }
+        
+        .filter-group-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #0097A7;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .filter-group-title .clear-btn {
+            font-size: 10px;
+            color: #999;
+            cursor: pointer;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        
+        .filter-group-title .clear-btn:hover { color: #e53935; }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 2px 0;
+        }
+        
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1.5px solid #e0e0e0;
+            background: white;
+            color: #5f6368;
+            transition: all 0.15s;
+            user-select: none;
+        }
+        
+        .filter-chip:hover {
+            border-color: #0097A7;
+            color: #0097A7;
+        }
+        
+        .filter-chip.active {
+            background: #0097A7;
+            border-color: #0097A7;
+            color: white;
+        }
+        
+        .filter-chip .count {
+            font-size: 10px;
+            opacity: 0.7;
+        }
+        
+        /* ===== RECHERCHE ===== */
         .search-box {
-            padding: 10px 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 10px 18px;
+            background: white;
+            border-bottom: 1px solid #e8eaed;
         }
         
         .search-input {
             width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            font-size: 14px;
+            padding: 9px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
             outline: none;
-        }
-        
-        .search-input:focus {
-            border-color: #00BCD4;
-            box-shadow: 0 0 5px rgba(0,188,212,0.3);
-        }
-        
-        /* Liste des entreprises */
-        .company-list { flex: 1; overflow-y: auto; }
-        
-        .company-item {
-            padding: 12px 20px;
-            border-bottom: 1px solid #e0e0e0;
-            cursor: pointer;
             transition: all 0.2s;
         }
         
-        .company-item:hover { background: #f8f9fa; }
+        .search-input:focus {
+            border-color: #0097A7;
+            box-shadow: 0 0 0 3px rgba(0,151,167,0.1);
+        }
+        
+        /* ===== LISTE ENTREPRISES ===== */
+        .company-list { flex: 1; overflow-y: auto; }
+        
+        .company-item {
+            padding: 11px 18px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .company-item:hover { background: #f8f9fb; }
         
         .company-item.selected {
-            background: #e0f7fa;
-            border-left: 4px solid #00BCD4;
+            background: #e0f2f1;
+            border-left: 3px solid #0097A7;
         }
         
         .company-item.archived {
-            opacity: 0.3;
+            opacity: 0.25;
             background: #fafafa;
         }
         
         .company-name {
             font-weight: 600;
-            color: #333;
-            margin-bottom: 4px;
-            font-size: 14px;
+            color: #1a1a2e;
+            margin-bottom: 3px;
+            font-size: 13px;
         }
         
         .company-address {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 6px;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
         }
         
         .company-meta {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -192,71 +345,78 @@
             color: white;
         }
         
+        .company-forme {
+            font-size: 10px;
+            color: #999;
+            font-weight: 500;
+        }
+        
         .company-contact-icons {
             display: flex;
-            gap: 5px;
+            gap: 4px;
         }
         
         .contact-icon {
-            font-size: 12px;
-            opacity: 0.3;
+            font-size: 11px;
+            opacity: 0.2;
         }
         
         .contact-icon.active { opacity: 1; }
         
-        /* Popup */
-        .custom-popup {
-            min-width: 320px;
-            max-width: 400px;
+        .list-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
         }
         
+        /* ===== POPUP ===== */
+        .custom-popup { min-width: 300px; max-width: 380px; }
+        
         .popup-title {
-            font-weight: 600;
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #00BCD4;
+            font-weight: 700;
+            font-size: 15px;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0097A7;
         }
         
         .popup-section {
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
         }
         
         .popup-section:last-of-type { border-bottom: none; }
         
         .popup-section-title {
             font-weight: 600;
-            font-size: 12px;
-            color: #00BCD4;
+            font-size: 11px;
+            color: #0097A7;
             text-transform: uppercase;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
         }
         
         .popup-info {
-            margin-bottom: 6px;
-            font-size: 13px;
-            line-height: 1.4;
+            margin-bottom: 4px;
+            font-size: 12px;
+            line-height: 1.5;
         }
         
         .popup-label {
             font-weight: 600;
-            color: #666;
+            color: #888;
             display: inline-block;
-            min-width: 100px;
+            min-width: 90px;
         }
         
-        /* Section Contact */
         .contact-section {
             background: #f0fdf4;
             border-radius: 8px;
-            padding: 12px;
-            margin: 10px 0;
+            padding: 10px;
+            margin: 8px 0;
         }
         
         .contact-section.no-data { background: #fef3c7; }
@@ -264,177 +424,142 @@
         .contact-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
+            gap: 8px;
+            margin-bottom: 6px;
         }
         
         .contact-item:last-child { margin-bottom: 0; }
         
-        .contact-icon-large {
-            font-size: 18px;
-            width: 24px;
-            text-align: center;
-        }
-        
-        .contact-value { flex: 1; }
-        
         .contact-value a {
-            color: #00BCD4;
+            color: #0097A7;
             text-decoration: none;
             font-weight: 500;
+            font-size: 12px;
         }
         
         .contact-value a:hover { text-decoration: underline; }
         
-        .phone-link { color: #4CAF50 !important; }
+        .phone-link { color: #2e7d32 !important; }
         
-        /* Contexte IA */
         .ia-context {
-            background: #e3f2fd;
-            border-left: 3px solid #2196F3;
-            padding: 10px 12px;
-            margin: 10px 0;
-            border-radius: 0 8px 8px 0;
-            font-size: 12px;
-            color: #1565C0;
+            background: #e8eaf6;
+            border-left: 3px solid #3f51b5;
+            padding: 8px 10px;
+            margin: 8px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 11px;
+            color: #283593;
             font-style: italic;
         }
         
         .ia-context-title {
             font-weight: 600;
             font-style: normal;
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
             gap: 5px;
-            margin-bottom: 5px;
-            color: #1976D2;
         }
         
-        /* Boutons */
-        .btn-call {
-            display: inline-block;
-            background: #4CAF50;
+        .ia-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: linear-gradient(135deg, #5c6bc0, #7e57c2);
             color: white;
-            padding: 8px 15px;
+            padding: 2px 7px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+        
+        /* Boutons popup */
+        .popup-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
             border-radius: 6px;
             text-decoration: none;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
-            transition: all 0.2s;
-            margin-right: 8px;
-        }
-        
-        .btn-call:hover {
-            background: #388E3C;
-            transform: translateY(-2px);
-        }
-        
-        .btn-website {
-            display: inline-block;
-            background: #2196F3;
+            transition: all 0.15s;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
             color: white;
-            padding: 8px 15px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s;
-            margin-right: 8px;
         }
         
-        .btn-website:hover {
-            background: #1976D2;
-            transform: translateY(-2px);
-        }
+        .btn-call { background: #2e7d32; }
+        .btn-call:hover { background: #1b5e20; }
+        .btn-website { background: #1565c0; }
+        .btn-website:hover { background: #0d47a1; }
+        .btn-rcs { background: #0097A7; }
+        .btn-rcs:hover { background: #006064; }
         
-        .btn-rcs {
-            display: inline-block;
-            background: #00BCD4;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .btn-rcs:hover {
-            background: #0097A7;
-            transform: translateY(-2px);
-        }
-        
-        /* NOUVEAU: Bouton Archiver */
         .btn-archive {
-            display: inline-block;
-            background: #f44336;
+            display: block;
+            width: 100%;
+            background: #c62828;
             color: white;
-            padding: 10px 20px;
+            padding: 9px;
             border-radius: 6px;
-            text-decoration: none;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            transition: all 0.2s;
+            transition: all 0.15s;
             cursor: pointer;
             border: none;
-            width: 100%;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 12px;
+            font-family: inherit;
         }
         
         .btn-archive:hover {
-            background: #d32f2f;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+            background: #b71c1c;
+            box-shadow: 0 4px 12px rgba(198,40,40,0.3);
         }
         
         .status-selector {
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 12px;
+            padding-top: 10px;
             border-top: 1px solid #e0e0e0;
         }
         
+        .status-selector strong { font-size: 12px; }
+        
         .status-buttons {
             display: flex;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 6px;
+            margin-top: 8px;
         }
         
         .status-btn {
             flex: 1;
-            padding: 8px;
+            padding: 7px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-size: 11px;
             font-weight: 600;
             color: white;
-            transition: all 0.2s;
+            transition: all 0.15s;
+            font-family: inherit;
         }
         
-        .status-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
+        .status-btn:hover { opacity: 0.85; transform: translateY(-1px); }
         
-        .btn-a-voir { background: #FF5252; }
-        .btn-visite { background: #FFB300; }
-        .btn-signe { background: #00BCD4; }
+        .btn-a-voir { background: #e53935; }
+        .btn-visite { background: #FB8C00; }
+        .btn-signe { background: #00897B; }
         
-        /* Badge IA */
-        .ia-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 600;
-        }
-        
-        /* Loading */
+        /* ===== LOADING ===== */
         .loading {
             position: absolute;
             top: 50%;
@@ -445,13 +570,13 @@
         }
         
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #00BCD4;
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid #0097A7;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
         }
         
         @keyframes spin {
@@ -459,113 +584,162 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            .sidebar { width: 100%; height: 40%; }
-            #map { height: 60%; }
-            .header { flex-direction: column; gap: 10px; text-align: center; }
-            .stats { justify-content: center; }
+        /* ===== MODAL IDENTIFICATION ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
         }
-
+        
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 36px;
+            width: 360px;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+            animation: modalIn 0.3s ease;
+        }
+        
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal h2 {
+            font-size: 20px;
+            margin-bottom: 6px;
+            color: #1a1a2e;
+        }
+        
+        .modal p {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+        
+        .modal select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            font-weight: 500;
+            outline: none;
+            appearance: none;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 14px center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        
+        .modal select:focus {
+            border-color: #0097A7;
+        }
+        
+        .modal button {
+            width: 100%;
+            padding: 12px;
+            background: #0097A7;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.15s;
+        }
+        
+        .modal button:hover { background: #006064; }
+        .modal button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        /* ===== NOTIFICATION ===== */
+        .notification {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 10000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
+        }
+        
+        .notification.success { background: #00897B; }
+        .notification.error { background: #c62828; }
+        .notification.info { background: #0097A7; }
+        
         @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
+            from { transform: translateX(120%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
         
         @keyframes slideOut {
             from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(400px); opacity: 0; }
-        }
-
-        /* Animation de suppression */
-        @keyframes fadeOut {
-            from { opacity: 1; transform: scale(1); }
-            to { opacity: 0; transform: scale(0.8); }
+            to { transform: translateX(120%); opacity: 0; }
         }
         
-        .company-item.removing {
-            animation: fadeOut 0.3s ease forwards;
-        }
-
-        /* Toggle archives */
-        .archive-toggle {
-            padding: 10px 20px;
-            background: #fff3e0;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .toggle-checkbox {
-            width: 40px;
-            height: 20px;
-            background: #ccc;
-            border-radius: 20px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .toggle-checkbox.active {
-            background: #00BCD4;
-        }
-
-        .toggle-checkbox::after {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: all 0.3s;
-        }
-
-        .toggle-checkbox.active::after {
-            left: 22px;
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .sidebar { width: 100%; height: 40%; }
+            #map { height: 60%; }
+            .header { padding: 10px 16px; }
+            .header h1 { font-size: 14px; }
+            .stats { display: none; }
         }
     </style>
 </head>
 <body>
+    <!-- Modal identification -->
+    <div class="modal-overlay" id="user-modal" style="display:none;">
+        <div class="modal">
+            <h2>Bienvenue</h2>
+            <p>Sélectionnez votre nom pour accéder à la carte</p>
+            <select id="user-select">
+                <option value="" disabled selected>Choisir...</option>
+                <option value="Theo">Theo</option>
+                <option value="Yann">Yann</option>
+                <option value="Emilie">Emilie</option>
+                <option value="Djamela">Djamela</option>
+                <option value="Ali">Ali</option>
+                <option value="Olivier">Olivier</option>
+            </select>
+            <button id="user-confirm" disabled onclick="confirmUser()">Continuer</button>
+        </div>
+    </div>
+
     <!-- En-tête -->
     <div class="header">
         <div class="logo-container">
             <div class="logo">
                 <span class="logo-ag2r">AG2R</span> <span class="logo-mondiale">La Mondiale</span>
             </div>
-            <h1>Cartographie Entreprises - La Réunion</h1>
+            <h1>Cartographie Entreprises — La Réunion</h1>
         </div>
-        <div class="stats">
-            <div class="stat-item">
-                <span>📍</span>
-                <span id="total-count">0</span> entreprises
+        <div class="header-right">
+            <div class="stats">
+                <div class="stat-item">📍 <span id="total-count">0</span></div>
+                <div class="stat-item" style="color:#ffcdd2;">● <span id="a-voir-count">0</span></div>
+                <div class="stat-item" style="color:#ffe0b2;">● <span id="visite-count">0</span></div>
+                <div class="stat-item" style="color:#b2dfdb;">● <span id="signe-count">0</span></div>
+                <div class="stat-item">📞 <span id="phone-count">0</span></div>
+                <div class="stat-item">🗄️ <span id="archived-count">0</span></div>
             </div>
-            <div class="stat-item">
-                <span>🔴</span>
-                <span id="a-voir-count">0</span> à voir
-            </div>
-            <div class="stat-item">
-                <span>🟠</span>
-                <span id="visite-count">0</span> visité
-            </div>
-            <div class="stat-item">
-                <span>🔵</span>
-                <span id="signe-count">0</span> signé
-            </div>
-            <div class="stat-item">
-                <span>📞</span>
-                <span id="phone-count">0</span> tél.
-            </div>
-            <div class="stat-item">
-                <span>🤖</span>
-                <span id="ia-count">0</span> IA
-            </div>
-            <div class="stat-item">
-                <span>🗄️</span>
-                <span id="archived-count">0</span> archivées
+            <div class="user-badge" id="user-badge" style="display:none;">
+                <div class="avatar">👤</div>
+                <span id="user-display-name"></span>
             </div>
         </div>
     </div>
@@ -593,14 +767,38 @@
                 </div>
             </div>
             
-            <!-- NOUVEAU: Toggle pour afficher/masquer archives -->
-            <div class="archive-toggle">
-                <div class="toggle-checkbox" id="archive-toggle" onclick="toggleArchiveView()"></div>
-                <span id="archive-toggle-label">Afficher les archives</span>
+            <!-- FILTRES -->
+            <div class="filters-section">
+                <div class="filters-toggle" onclick="toggleFilters()">
+                    <h3>Filtres</h3>
+                    <span class="arrow" id="filters-arrow">▼</span>
+                </div>
+                <div class="filters-body" id="filters-body">
+                    <!-- Filtre Forme Juridique -->
+                    <div class="filter-group">
+                        <div class="filter-group-title">
+                            Forme juridique
+                            <span class="clear-btn" onclick="clearFilter('forme')">Effacer</span>
+                        </div>
+                        <div class="filter-options" id="filter-forme"></div>
+                    </div>
+                    <!-- Filtre Statut prospect -->
+                    <div class="filter-group">
+                        <div class="filter-group-title">
+                            Statut prospect
+                            <span class="clear-btn" onclick="clearFilter('statut')">Effacer</span>
+                        </div>
+                        <div class="filter-options" id="filter-statut">
+                            <div class="filter-chip" data-filter="statut" data-value="a-voir" onclick="toggleFilterChip(this)">À voir</div>
+                            <div class="filter-chip" data-filter="statut" data-value="visite" onclick="toggleFilterChip(this)">Visité</div>
+                            <div class="filter-chip" data-filter="statut" data-value="signe" onclick="toggleFilterChip(this)">Signé</div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="search-box">
-                <input type="text" class="search-input" id="search-input" placeholder="🔍 Rechercher une entreprise...">
+                <input type="text" class="search-input" id="search-input" placeholder="Rechercher une entreprise, adresse, SIREN...">
             </div>
             <div class="company-list" id="company-list"></div>
         </div>
@@ -609,7 +807,7 @@
     <!-- Loading -->
     <div class="loading" id="loading">
         <div class="spinner"></div>
-        <p>Chargement des données...</p>
+        <p style="font-size:13px;color:#888;">Chargement des données...</p>
     </div>
     
     <!-- Leaflet JS -->
@@ -617,12 +815,12 @@
     
     <script>
         // ============================================
-        // CONFIGURATION - GID: 1491563666
+        // CONFIGURATION
         // ============================================
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0I_yJ0jj-Cz6OcNZsbttL1bSIwPA7E_R4JyGx8g715cQGbvxqMhQa1zTVvfEZkp1yUrPtlvlDvpMi/pub?gid=1491563666&single=true&output=csv';
         
-        // URL du Web App Google Apps Script pour archivage
-        const ARCHIVE_WEBAPP_URL = 'VOTRE_URL_WEB_APP_ICI'; // À remplacer après déploiement
+        // ⚠️ REMPLACER PAR L'URL DU WEB APP APRÈS DÉPLOIEMENT
+        const ARCHIVE_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyX52nHSIHQR-XwjzbJv9PbH_3Nm0p4s8e0VhB5k4aFJVfsGDT_ND2oAI-r_WzoCwuw1w/exec';
         
         // ============================================
         // VARIABLES GLOBALES
@@ -632,26 +830,160 @@
         let companies = [];
         let filteredCompanies = [];
         let statuses = {};
-        let archivedCompanies = new Set(); // NOUVEAU: Stockage local des archives
-        let showArchived = false; // NOUVEAU: Toggle affichage archives
+        let currentUser = null;
         
+        // Filtres actifs
+        let activeFilters = {
+            forme: new Set(),
+            statut: new Set()
+        };
+        
+        // ============================================
+        // IDENTIFICATION UTILISATEUR
+        // ============================================
+        function initUser() {
+            const saved = localStorage.getItem('ag2r_user_v2');
+            if (saved) {
+                currentUser = saved;
+                showUserBadge();
+            } else {
+                document.getElementById('user-modal').style.display = 'flex';
+            }
+        }
+        
+        document.getElementById('user-select').addEventListener('change', function() {
+            document.getElementById('user-confirm').disabled = !this.value;
+        });
+        
+        function confirmUser() {
+            const sel = document.getElementById('user-select');
+            if (!sel.value) return;
+            currentUser = sel.value;
+            localStorage.setItem('ag2r_user_v2', currentUser);
+            document.getElementById('user-modal').style.display = 'none';
+            showUserBadge();
+        }
+        
+        function showUserBadge() {
+            const badge = document.getElementById('user-badge');
+            badge.style.display = 'flex';
+            document.getElementById('user-display-name').textContent = currentUser;
+        }
+        
+        // ============================================
+        // STATUTS (par utilisateur)
+        // ============================================
         function loadStatuses() {
-            const saved = localStorage.getItem('ag2r_statuses_v3');
+            const key = 'ag2r_statuses_' + (currentUser || 'default');
+            const saved = localStorage.getItem(key);
             return saved ? JSON.parse(saved) : {};
         }
         
         function saveStatuses() {
-            localStorage.setItem('ag2r_statuses_v3', JSON.stringify(statuses));
+            const key = 'ag2r_statuses_' + (currentUser || 'default');
+            localStorage.setItem(key, JSON.stringify(statuses));
         }
-
-        // NOUVEAU: Gestion du stockage des archives
-        function loadArchivedCompanies() {
-            const saved = localStorage.getItem('ag2r_archived_v1');
-            return saved ? new Set(JSON.parse(saved)) : new Set();
+        
+        // ============================================
+        // FILTRES
+        // ============================================
+        function toggleFilters() {
+            const body = document.getElementById('filters-body');
+            const arrow = document.getElementById('filters-arrow');
+            body.classList.toggle('open');
+            arrow.classList.toggle('open');
         }
-
-        function saveArchivedCompanies() {
-            localStorage.setItem('ag2r_archived_v1', JSON.stringify([...archivedCompanies]));
+        
+        function toggleFilterChip(el) {
+            const filterType = el.dataset.filter;
+            const value = el.dataset.value;
+            
+            el.classList.toggle('active');
+            
+            if (el.classList.contains('active')) {
+                activeFilters[filterType].add(value);
+            } else {
+                activeFilters[filterType].delete(value);
+            }
+            
+            applyFilters();
+        }
+        
+        function clearFilter(filterType) {
+            activeFilters[filterType].clear();
+            document.querySelectorAll('[data-filter="' + filterType + '"]').forEach(function(chip) {
+                chip.classList.remove('active');
+            });
+            applyFilters();
+        }
+        
+        function applyFilters() {
+            const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            
+            filteredCompanies = companies.filter(function(c, i) {
+                const id = c.siren || ('c_' + i);
+                
+                // Filtre recherche
+                if (searchQuery) {
+                    const match = (c.name && c.name.toLowerCase().includes(searchQuery)) ||
+                        (c.address && c.address.toLowerCase().includes(searchQuery)) ||
+                        (c.siren && c.siren.includes(searchQuery)) ||
+                        (c.representants && c.representants.toLowerCase().includes(searchQuery));
+                    if (!match) return false;
+                }
+                
+                // Filtre forme juridique
+                if (activeFilters.forme.size > 0) {
+                    if (!activeFilters.forme.has(c.forme)) return false;
+                }
+                
+                // Filtre statut prospect
+                if (activeFilters.statut.size > 0) {
+                    const status = statuses[id] || 'a-voir';
+                    if (!activeFilters.statut.has(status)) return false;
+                }
+                
+                return true;
+            });
+            
+            displayMarkers();
+            displayCompanyList();
+        }
+        
+        function buildFilterChips() {
+            // Forme juridique — compter les occurrences
+            const formeCounts = {};
+            companies.forEach(function(c) {
+                if (c.forme && c.forme.trim()) {
+                    formeCounts[c.forme] = (formeCounts[c.forme] || 0) + 1;
+                }
+            });
+            
+            const formeContainer = document.getElementById('filter-forme');
+            formeContainer.innerHTML = '';
+            
+            // Trier par count décroissant
+            const sortedFormes = Object.entries(formeCounts).sort(function(a, b) { return b[1] - a[1]; });
+            
+            sortedFormes.forEach(function(entry) {
+                const forme = entry[0];
+                const count = entry[1];
+                const chip = document.createElement('div');
+                chip.className = 'filter-chip';
+                chip.dataset.filter = 'forme';
+                chip.dataset.value = forme;
+                chip.onclick = function() { toggleFilterChip(this); };
+                
+                // Raccourcir les noms longs
+                let label = forme;
+                if (label.length > 30) label = label.substring(0, 28) + '...';
+                
+                chip.innerHTML = label + ' <span class="count">(' + count + ')</span>';
+                
+                if (activeFilters.forme.has(forme)) chip.classList.add('active');
+                
+                formeContainer.appendChild(chip);
+            });
         }
         
         // ============================================
@@ -660,7 +992,7 @@
         function initMap() {
             map = L.map('map').setView([-21.1151, 55.5364], 10);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap',
+                attribution: '&copy; OpenStreetMap',
                 maxZoom: 19
             }).addTo(map);
         }
@@ -670,61 +1002,50 @@
         // ============================================
         async function loadData() {
             try {
-                console.log('🔄 Chargement...');
                 const response = await fetch(SHEET_CSV_URL);
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!response.ok) throw new Error('HTTP ' + response.status);
                 
                 const csvText = await response.text();
                 companies = parseCSV(csvText);
                 filteredCompanies = [...companies];
                 
-                console.log(`✅ ${companies.length} entreprises chargées`);
-                
                 statuses = loadStatuses();
-                archivedCompanies = loadArchivedCompanies(); // NOUVEAU
                 
-                companies.forEach((c, i) => {
-                    const id = c.siren || `c_${i}`;
+                companies.forEach(function(c, i) {
+                    const id = c.siren || ('c_' + i);
                     if (!statuses[id]) statuses[id] = 'a-voir';
                 });
                 saveStatuses();
                 
-                displayMarkers();
-                displayCompanyList();
+                buildFilterChips();
+                applyFilters();
                 updateStats();
                 
                 document.getElementById('loading').style.display = 'none';
                 
             } catch (error) {
-                console.error('❌ Erreur:', error);
-                document.getElementById('loading').innerHTML = `
-                    <p style="color:red;">❌ Erreur de chargement</p>
-                    <p style="font-size:14px;margin-top:10px;">${error.message}</p>
-                    <p style="font-size:12px;margin-top:10px;">Vérifiez que Export_MyMaps est publié sur le web.</p>
-                `;
+                document.getElementById('loading').innerHTML =
+                    '<p style="color:#c62828;font-weight:600;">Erreur de chargement</p>' +
+                    '<p style="font-size:13px;margin-top:8px;color:#888;">' + error.message + '</p>';
             }
         }
         
         // ============================================
-        // PARSER CSV ENRICHI IA
+        // PARSER CSV
         // ============================================
         function parseCSV(csv) {
             const lines = csv.split('\n');
-            const rawHeaders = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-            const headers = rawHeaders.map(h => h.toLowerCase().replace(/\s+/g, '_').replace(/['']/g, '_'));
+            const rawHeaders = lines[0].split(',').map(function(h) { return h.replace(/"/g, '').trim(); });
+            const headers = rawHeaders.map(function(h) { return h.toLowerCase().replace(/\s+/g, '_').replace(/['']/g, '_'); });
             
-            console.log('📋 En-têtes:', rawHeaders);
-            
-            const findCol = (keywords) => {
+            const findCol = function(keywords) {
                 for (let kw of keywords) {
-                    const idx = headers.findIndex(h => h.includes(kw.toLowerCase()));
+                    const idx = headers.findIndex(function(h) { return h.includes(kw.toLowerCase()); });
                     if (idx !== -1) return idx;
                 }
                 return -1;
             };
             
-            // Colonnes de base
             const colName = findCol(['dénomination', 'denomination', 'nom']);
             const colAddress = findCol(['adresse', 'siège']);
             const colSiren = findCol(['siren']);
@@ -734,19 +1055,10 @@
             const colDebut = findCol(['début', 'debut']);
             const colRcs = findCol(['lien_rcs', 'rcs']);
             const colStatut = findCol(['statut']);
-            
-            // Colonnes IA
             const colTel = findCol(['téléphone', 'telephone']);
             const colSite = findCol(['site_web', 'site']);
             const colContexte = findCol(['contexte_ia', 'contexte']);
             const colReps = findCol(['représentants', 'representants']);
-            
-            console.log('📞 Colonnes IA:', {
-                tel: colTel !== -1 ? rawHeaders[colTel] : '❌',
-                site: colSite !== -1 ? rawHeaders[colSite] : '❌',
-                contexte: colContexte !== -1 ? rawHeaders[colContexte] : '❌',
-                reps: colReps !== -1 ? rawHeaders[colReps] : '❌'
-            });
             
             const data = [];
             
@@ -762,27 +1074,20 @@
                 let lng = parseFloat(lngStr);
                 
                 if (isNaN(lat) || isNaN(lng)) continue;
-                
-                // Correction si inversées
                 if (lat > 0 && lng < 0) { [lat, lng] = [lng, lat]; }
-                
-                // Zone La Réunion
                 if (lat < -22 || lat > -20 || lng < 54 || lng > 56) continue;
                 
-                // Lien RCS
                 let rcsLink = colRcs !== -1 ? String(values[colRcs] || '') : '';
                 if (rcsLink.includes('http')) {
                     const m = rcsLink.match(/https?:\/\/[^\s"]+/);
                     if (m) rcsLink = m[0];
                 }
                 
-                // Données IA
                 let tel = colTel !== -1 ? String(values[colTel] || '').trim() : '';
                 let site = colSite !== -1 ? String(values[colSite] || '').trim() : '';
                 let contexte = colContexte !== -1 ? String(values[colContexte] || '').trim() : '';
                 let reps = colReps !== -1 ? String(values[colReps] || '').trim() : '';
                 
-                // Nettoyer "Non trouvé"
                 if (tel.toLowerCase().includes('non trouvé') || tel === 'null') tel = '';
                 if (site.toLowerCase().includes('non trouvé') || site === 'null') site = '';
                 if (contexte === 'null') contexte = '';
@@ -804,7 +1109,7 @@
                 };
                 
                 if (!company.rcsLink && company.siren) {
-                    company.rcsLink = `https://annuaire-entreprises.data.gouv.fr/entreprise/${company.siren.replace(/\s/g, '')}`;
+                    company.rcsLink = 'https://annuaire-entreprises.data.gouv.fr/entreprise/' + company.siren.replace(/\s/g, '');
                 }
                 
                 data.push(company);
@@ -833,204 +1138,174 @@
         // MARQUEURS
         // ============================================
         function getMarkerColor(status) {
-            return { 'a-voir': '#FF5252', 'visite': '#FFB300', 'signe': '#00BCD4' }[status] || '#FF5252';
+            return { 'a-voir': '#e53935', 'visite': '#FB8C00', 'signe': '#00897B' }[status] || '#e53935';
         }
         
         function createIcon(status, hasPhone) {
             const color = getMarkerColor(status);
-            const indicator = hasPhone ? '<div style="position:absolute;top:-5px;right:-5px;background:#4CAF50;border-radius:50%;width:12px;height:12px;font-size:8px;display:flex;align-items:center;justify-content:center;">📞</div>' : '';
+            const phoneIndicator = hasPhone ? '<div style="position:absolute;top:-4px;right:-4px;background:#2e7d32;border-radius:50%;width:10px;height:10px;border:1.5px solid white;"></div>' : '';
             
             return L.divIcon({
                 className: 'marker',
-                html: `<div style="position:relative;"><div style="width:24px;height:24px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,0.3);"></div>${indicator}</div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
+                html: '<div style="position:relative;"><div style="width:20px;height:20px;background:' + color + ';border:2.5px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>' + phoneIndicator + '</div>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
             });
         }
         
         function displayMarkers() {
-            Object.values(markers).forEach(m => map.removeLayer(m));
+            Object.values(markers).forEach(function(m) { map.removeLayer(m); });
             markers = {};
             
-            filteredCompanies.forEach((c, i) => {
-                const id = c.siren || `c_${i}`;
-                
-                // NOUVEAU: Ne pas afficher les entreprises archivées (sauf si toggle activé)
-                if (archivedCompanies.has(id) && !showArchived) return;
-                
+            filteredCompanies.forEach(function(c, i) {
+                const id = c.siren || ('c_' + i);
                 const status = statuses[id] || 'a-voir';
                 const hasPhone = c.telephone && c.telephone.length > 0;
                 
                 try {
                     const marker = L.marker([c.lat, c.lng], { icon: createIcon(status, hasPhone) }).addTo(map);
                     marker.bindPopup(createPopup(c, status, id), { maxWidth: 400 });
-                    marker.on('click', () => selectCompany(id));
+                    marker.on('click', function() { selectCompany(id); });
                     markers[id] = marker;
                 } catch (e) {}
             });
         }
         
         // ============================================
-        // POPUP ENRICHI IA + BOUTON ARCHIVER
+        // POPUP
         // ============================================
         function createPopup(c, status, id) {
             const hasContact = c.telephone || c.siteWeb;
-            const isArchived = archivedCompanies.has(id);
             
-            // Section Contact
             let contactHtml = '';
             if (hasContact) {
-                contactHtml = `<div class="contact-section">
-                    <div class="popup-section-title">📞 Contact</div>
-                    ${c.telephone ? `<div class="contact-item"><span class="contact-icon-large">📱</span><div class="contact-value"><a href="tel:${c.telephone}" class="phone-link">${c.telephone}</a></div></div>` : ''}
-                    ${c.siteWeb ? `<div class="contact-item"><span class="contact-icon-large">🌐</span><div class="contact-value"><a href="${c.siteWeb.startsWith('http') ? c.siteWeb : 'https://' + c.siteWeb}" target="_blank">${c.siteWeb.replace(/^https?:\/\//, '').substring(0, 30)}...</a></div></div>` : ''}
-                </div>`;
+                contactHtml = '<div class="contact-section"><div class="popup-section-title">Contact</div>';
+                if (c.telephone) {
+                    contactHtml += '<div class="contact-item"><span>📱</span><div class="contact-value"><a href="tel:' + c.telephone + '" class="phone-link">' + c.telephone + '</a></div></div>';
+                }
+                if (c.siteWeb) {
+                    const href = c.siteWeb.startsWith('http') ? c.siteWeb : 'https://' + c.siteWeb;
+                    const display = c.siteWeb.replace(/^https?:\/\//, '').substring(0, 30);
+                    contactHtml += '<div class="contact-item"><span>🌐</span><div class="contact-value"><a href="' + href + '" target="_blank">' + display + '</a></div></div>';
+                }
+                contactHtml += '</div>';
             } else {
-                contactHtml = `<div class="contact-section no-data"><div class="popup-section-title">📞 Contact</div><div style="color:#92400e;font-size:12px;">⚠️ Aucun contact trouvé</div></div>`;
+                contactHtml = '<div class="contact-section no-data"><div class="popup-section-title">Contact</div><div style="color:#92400e;font-size:11px;">Aucun contact trouvé</div></div>';
             }
             
-            // Contexte IA
             let iaHtml = '';
             if (c.contexteIA) {
-                iaHtml = `<div class="ia-context"><div class="ia-context-title"><span class="ia-badge">🤖 IA</span> Raisonnement</div>${c.contexteIA}</div>`;
+                iaHtml = '<div class="ia-context"><div class="ia-context-title"><span class="ia-badge">IA</span> Raisonnement</div>' + c.contexteIA + '</div>';
             }
             
-            // Représentants
             let repsHtml = '';
             if (c.representants) {
-                repsHtml = `<div class="popup-info"><span class="popup-label">👔 Dirigeants:</span><span style="font-size:12px;">${c.representants.substring(0, 80)}${c.representants.length > 80 ? '...' : ''}</span></div>`;
+                const repsDisplay = c.representants.length > 80 ? c.representants.substring(0, 78) + '...' : c.representants;
+                repsHtml = '<div class="popup-info"><span class="popup-label">Dirigeants</span><span style="font-size:11px;">' + repsDisplay + '</span></div>';
             }
             
-            // Boutons
-            let btns = '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">';
-            if (c.telephone) btns += `<a href="tel:${c.telephone}" class="btn-call">📞 Appeler</a>`;
-            if (c.siteWeb) btns += `<a href="${c.siteWeb.startsWith('http') ? c.siteWeb : 'https://' + c.siteWeb}" target="_blank" class="btn-website">🌐 Site</a>`;
-            if (c.rcsLink) btns += `<a href="${c.rcsLink}" target="_blank" class="btn-rcs">📋 RCS</a>`;
+            let btns = '<div class="popup-actions">';
+            if (c.telephone) btns += '<a href="tel:' + c.telephone + '" class="btn-action btn-call">📞 Appeler</a>';
+            if (c.siteWeb) {
+                const href = c.siteWeb.startsWith('http') ? c.siteWeb : 'https://' + c.siteWeb;
+                btns += '<a href="' + href + '" target="_blank" class="btn-action btn-website">🌐 Site</a>';
+            }
+            if (c.rcsLink) btns += '<a href="' + c.rcsLink + '" target="_blank" class="btn-action btn-rcs">📋 RCS</a>';
             btns += '</div>';
             
-            // NOUVEAU: Bouton Archiver (sauf si déjà archivée)
-            const archiveButton = !isArchived ? 
-                `<button class="btn-archive" onclick="archiveCompany('${id}')">🗄️ Archiver cette entreprise</button>` : 
-                `<div style="padding:10px;background:#f5f5f5;border-radius:6px;text-align:center;margin-top:15px;color:#999;">✅ Entreprise archivée</div>`;
-            
-            return `
-                <div class="custom-popup">
-                    <div class="popup-title">${c.name || 'Sans nom'}</div>
-                    ${contactHtml}
-                    ${iaHtml}
-                    <div class="popup-section">
-                        <div class="popup-section-title">📍 Informations</div>
-                        <div class="popup-info"><span class="popup-label">Adresse:</span><br><span style="font-size:12px;">${c.address || '-'}</span></div>
-                        ${repsHtml}
-                        <div class="popup-info"><span class="popup-label">🏢 Forme:</span> ${c.forme || '-'}</div>
-                        <div class="popup-info"><span class="popup-label">🔢 SIREN:</span> ${c.siren || '-'}</div>
-                        <div class="popup-info"><span class="popup-label">📅 Début:</span> ${c.debut || '-'}</div>
-                    </div>
-                    ${btns}
-                    <div class="status-selector">
-                        <strong>Changer le statut:</strong>
-                        <div class="status-buttons">
-                            <button class="status-btn btn-a-voir" onclick="changeStatus('${id}','a-voir')">À voir</button>
-                            <button class="status-btn btn-visite" onclick="changeStatus('${id}','visite')">Visité</button>
-                            <button class="status-btn btn-signe" onclick="changeStatus('${id}','signe')">Signé</button>
-                        </div>
-                    </div>
-                    ${archiveButton}
-                </div>
-            `;
+            return '<div class="custom-popup">' +
+                '<div class="popup-title">' + (c.name || 'Sans nom') + '</div>' +
+                contactHtml + iaHtml +
+                '<div class="popup-section">' +
+                    '<div class="popup-section-title">Informations</div>' +
+                    '<div class="popup-info"><span class="popup-label">Adresse</span><br><span style="font-size:11px;">' + (c.address || '-') + '</span></div>' +
+                    repsHtml +
+                    '<div class="popup-info"><span class="popup-label">Forme</span> ' + (c.forme || '-') + '</div>' +
+                    '<div class="popup-info"><span class="popup-label">SIREN</span> ' + (c.siren || '-') + '</div>' +
+                    '<div class="popup-info"><span class="popup-label">Début</span> ' + (c.debut || '-') + '</div>' +
+                '</div>' +
+                btns +
+                '<div class="status-selector">' +
+                    '<strong>Statut :</strong>' +
+                    '<div class="status-buttons">' +
+                        '<button class="status-btn btn-a-voir" onclick="changeStatus(\'' + id + '\',\'a-voir\')">À voir</button>' +
+                        '<button class="status-btn btn-visite" onclick="changeStatus(\'' + id + '\',\'visite\')">Visité</button>' +
+                        '<button class="status-btn btn-signe" onclick="changeStatus(\'' + id + '\',\'signe\')">Signé</button>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="btn-archive" onclick="archiveCompany(\'' + id + '\')">🗄️ Archiver cette entreprise</button>' +
+            '</div>';
         }
         
         // ============================================
-        // NOUVELLE FONCTION: ARCHIVAGE
+        // ARCHIVAGE v2 — Partagé via Web App
         // ============================================
         async function archiveCompany(id) {
-            const company = companies.find(c => (c.siren || `c_${companies.indexOf(c)}`) === id);
+            const company = companies.find(function(c) {
+                return (c.siren || ('c_' + companies.indexOf(c))) === id;
+            });
             if (!company) return;
             
-            const confirmMsg = `Voulez-vous vraiment archiver "${company.name}" ?\n\nL'entreprise sera masquée de la carte et envoyée vers la feuille "Archive" dans Excel.`;
+            if (!confirm('Archiver "' + company.name + '" ?\n\nL\'entreprise disparaîtra de la carte pour tout le monde.')) return;
             
-            if (!confirm(confirmMsg)) return;
+            // Vérifier que le Web App est configuré
+            if (!ARCHIVE_WEBAPP_URL || ARCHIVE_WEBAPP_URL === 'VOTRE_URL_WEB_APP_ICI') {
+                showNotification('Web App non configuré. Contactez Theo.', 'error');
+                return;
+            }
             
             try {
-                // 1. Ajouter à la liste locale des archives
-                archivedCompanies.add(id);
-                saveArchivedCompanies();
+                showNotification('Archivage en cours...', 'info');
                 
-                // 2. Masquer visuellement
+                const payload = {
+                    action: 'archive',
+                    data: {
+                        name: company.name,
+                        address: company.address,
+                        siren: company.siren,
+                        representants: company.representants,
+                        telephone: company.telephone,
+                        siteWeb: company.siteWeb,
+                        contexteIA: company.contexteIA,
+                        forme: company.forme,
+                        debut: company.debut,
+                        statut: company.statut,
+                        rcsLink: company.rcsLink,
+                        archivedBy: currentUser || 'Inconnu'
+                    }
+                };
+                
+                // Envoyer au Web App
+                await fetch(ARCHIVE_WEBAPP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                // Retirer visuellement
                 if (markers[id]) {
                     map.removeLayer(markers[id]);
                     delete markers[id];
                 }
                 
-                // 3. Mettre à jour l'affichage
-                displayCompanyList();
+                // Retirer des données locales
+                companies = companies.filter(function(c) {
+                    return (c.siren || ('c_' + companies.indexOf(c))) !== id;
+                });
+                
+                // Rafraîchir tout
+                applyFilters();
                 updateStats();
+                buildFilterChips();
                 
-                // 4. Envoyer vers Google Sheets (via Web App)
-                await sendToArchiveSheet(company);
-                
-                showNotification(`✅ "${company.name}" archivée avec succès`);
+                showNotification('"' + company.name + '" archivée par ' + (currentUser || '?'), 'success');
                 
             } catch (error) {
-                console.error('Erreur archivage:', error);
-                showNotification(`❌ Erreur lors de l'archivage: ${error.message}`);
+                showNotification('Erreur: ' + error.message, 'error');
             }
         }
         
-        // NOUVEAU: Envoi vers Google Sheets Archive
-        async function sendToArchiveSheet(company) {
-            if (!ARCHIVE_WEBAPP_URL || ARCHIVE_WEBAPP_URL === 'VOTRE_URL_WEB_APP_ICI') {
-                console.warn('⚠️ URL Web App non configurée - archivage local uniquement');
-                return;
-            }
-            
-            const payload = {
-                action: 'archive',
-                data: {
-                    name: company.name,
-                    address: company.address,
-                    siren: company.siren,
-                    representants: company.representants,
-                    telephone: company.telephone,
-                    siteWeb: company.siteWeb,
-                    contexteIA: company.contexteIA,
-                    forme: company.forme,
-                    debut: company.debut,
-                    statut: company.statut,
-                    rcsLink: company.rcsLink,
-                    archivedDate: new Date().toLocaleString('fr-FR')
-                }
-            };
-            
-            const response = await fetch(ARCHIVE_WEBAPP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            
-            console.log('✅ Entreprise envoyée vers Archive Google Sheets');
-        }
-        
-        // NOUVEAU: Toggle affichage archives
-        function toggleArchiveView() {
-            showArchived = !showArchived;
-            const toggle = document.getElementById('archive-toggle');
-            const label = document.getElementById('archive-toggle-label');
-            
-            if (showArchived) {
-                toggle.classList.add('active');
-                label.textContent = 'Masquer les archives';
-            } else {
-                toggle.classList.remove('active');
-                label.textContent = 'Afficher les archives';
-            }
-            
-            displayMarkers();
-            displayCompanyList();
-        }
-        
-        window.toggleArchiveView = toggleArchiveView;
         window.archiveCompany = archiveCompany;
         
         // ============================================
@@ -1042,38 +1317,37 @@
             
             const statusText = { 'a-voir': 'À voir', 'visite': 'Visité', 'signe': 'Signé' };
             
-            filteredCompanies.forEach((c, i) => {
-                const id = c.siren || `c_${i}`;
+            if (filteredCompanies.length === 0) {
+                list.innerHTML = '<div class="list-empty">Aucune entreprise trouvée</div>';
+                return;
+            }
+            
+            filteredCompanies.forEach(function(c, i) {
+                const id = c.siren || ('c_' + i);
                 const status = statuses[id] || 'a-voir';
                 const hasPhone = c.telephone && c.telephone.length > 0;
                 const hasSite = c.siteWeb && c.siteWeb.length > 0;
                 const hasIA = c.contexteIA && c.contexteIA.length > 0;
-                const isArchived = archivedCompanies.has(id);
-                
-                // NOUVEAU: Ne pas afficher si archivée et toggle désactivé
-                if (isArchived && !showArchived) return;
                 
                 const item = document.createElement('div');
-                item.className = `company-item ${isArchived ? 'archived' : ''}`;
+                item.className = 'company-item';
                 item.dataset.id = id;
-                item.innerHTML = `
-                    <div class="company-name">${c.name || 'Sans nom'} ${isArchived ? '🗄️' : ''}</div>
-                    <div class="company-address">${c.address || '-'}</div>
-                    <div class="company-meta">
-                        <span class="company-status status-${status}">${statusText[status]}</span>
-                        <div class="company-contact-icons">
-                            <span class="contact-icon ${hasPhone ? 'active' : ''}" title="${hasPhone ? c.telephone : 'Pas de tél.'}">📞</span>
-                            <span class="contact-icon ${hasSite ? 'active' : ''}" title="${hasSite ? 'Site web' : 'Pas de site'}">🌐</span>
-                            <span class="contact-icon ${hasIA ? 'active' : ''}" title="${hasIA ? 'Enrichi IA' : ''}">🤖</span>
-                        </div>
-                    </div>
-                `;
+                item.innerHTML =
+                    '<div class="company-name">' + (c.name || 'Sans nom') + '</div>' +
+                    '<div class="company-address">' + (c.address || '-') + '</div>' +
+                    '<div class="company-meta">' +
+                        '<span class="company-status status-' + status + '">' + statusText[status] + '</span>' +
+                        (c.forme ? '<span class="company-forme">' + c.forme + '</span>' : '') +
+                        '<div class="company-contact-icons">' +
+                            '<span class="contact-icon ' + (hasPhone ? 'active' : '') + '">📞</span>' +
+                            '<span class="contact-icon ' + (hasSite ? 'active' : '') + '">🌐</span>' +
+                            '<span class="contact-icon ' + (hasIA ? 'active' : '') + '">🤖</span>' +
+                        '</div>' +
+                    '</div>';
                 
-                item.onclick = () => {
+                item.onclick = function() {
                     map.setView([c.lat, c.lng], 15);
-                    if (markers[id]) {
-                        markers[id].openPopup();
-                    }
+                    if (markers[id]) markers[id].openPopup();
                     selectCompany(id);
                 };
                 
@@ -1082,8 +1356,8 @@
         }
         
         function selectCompany(id) {
-            document.querySelectorAll('.company-item').forEach(i => i.classList.remove('selected'));
-            const item = document.querySelector(`[data-id="${id}"]`);
+            document.querySelectorAll('.company-item').forEach(function(i) { i.classList.remove('selected'); });
+            const item = document.querySelector('[data-id="' + id + '"]');
             if (item) {
                 item.classList.add('selected');
                 item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1094,16 +1368,8 @@
         // RECHERCHE
         // ============================================
         function setupSearch() {
-            document.getElementById('search-input').addEventListener('input', (e) => {
-                const q = e.target.value.toLowerCase().trim();
-                filteredCompanies = q === '' ? [...companies] : companies.filter(c =>
-                    (c.name && c.name.toLowerCase().includes(q)) ||
-                    (c.address && c.address.toLowerCase().includes(q)) ||
-                    (c.siren && c.siren.includes(q)) ||
-                    (c.representants && c.representants.toLowerCase().includes(q))
-                );
-                displayMarkers();
-                displayCompanyList();
+            document.getElementById('search-input').addEventListener('input', function() {
+                applyFilters();
             });
         }
         
@@ -1114,7 +1380,7 @@
             statuses[id] = newStatus;
             saveStatuses();
             
-            const c = companies.find(x => (x.siren || `c_${companies.indexOf(x)}`) === id);
+            const c = companies.find(function(x) { return (x.siren || ('c_' + companies.indexOf(x))) === id; });
             if (c && markers[id]) {
                 const hasPhone = c.telephone && c.telephone.length > 0;
                 markers[id].setIcon(createIcon(newStatus, hasPhone));
@@ -1123,7 +1389,7 @@
             
             displayCompanyList();
             updateStats();
-            showNotification(`Statut: ${newStatus.replace('-', ' ')}`);
+            showNotification('Statut: ' + newStatus.replace('-', ' '), 'info');
         }
         
         window.changeStatus = changeStatus;
@@ -1133,46 +1399,46 @@
         // ============================================
         function updateStats() {
             const counts = { 'a-voir': 0, 'visite': 0, 'signe': 0 };
-            let phoneCount = 0, iaCount = 0;
+            let phoneCount = 0;
             
-            companies.forEach((c, i) => {
-                const id = c.siren || `c_${i}`;
-                
-                // NOUVEAU: Ne compter que les non-archivées dans les stats principales
-                if (!archivedCompanies.has(id)) {
-                    counts[statuses[id] || 'a-voir']++;
-                    if (c.telephone) phoneCount++;
-                    if (c.contexteIA) iaCount++;
-                }
+            companies.forEach(function(c, i) {
+                const id = c.siren || ('c_' + i);
+                counts[statuses[id] || 'a-voir']++;
+                if (c.telephone) phoneCount++;
             });
             
-            document.getElementById('total-count').textContent = companies.length - archivedCompanies.size;
+            document.getElementById('total-count').textContent = companies.length;
             document.getElementById('a-voir-count').textContent = counts['a-voir'];
             document.getElementById('visite-count').textContent = counts['visite'];
             document.getElementById('signe-count').textContent = counts['signe'];
             document.getElementById('phone-count').textContent = phoneCount;
-            document.getElementById('ia-count').textContent = iaCount;
-            document.getElementById('archived-count').textContent = archivedCompanies.size; // NOUVEAU
+            document.getElementById('archived-count').textContent = '–';
         }
         
         // ============================================
         // NOTIFICATION
         // ============================================
-        function showNotification(msg) {
+        function showNotification(msg, type) {
+            type = type || 'info';
+            // Supprimer les notifs existantes
+            document.querySelectorAll('.notification').forEach(function(n) { n.remove(); });
+            
             const n = document.createElement('div');
-            n.style.cssText = 'position:fixed;top:100px;right:20px;background:#00BCD4;color:white;padding:15px 25px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:10000;animation:slideIn 0.3s ease;';
+            n.className = 'notification ' + type;
             n.textContent = msg;
             document.body.appendChild(n);
-            setTimeout(() => {
-                n.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => n.remove(), 300);
-            }, 2000);
+            
+            setTimeout(function() {
+                n.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(function() { n.remove(); }, 300);
+            }, 3000);
         }
         
         // ============================================
         // INIT
         // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
+            initUser();
             initMap();
             loadData();
             setupSearch();
