@@ -782,6 +782,26 @@
                         </div>
                         <div class="filter-options" id="filter-forme"></div>
                     </div>
+                    <!-- Filtre Section NAF -->
+                    <div class="filter-group">
+                        <div class="filter-group-title">
+                            Secteur d'activité (NAF)
+                            <span class="clear-btn" onclick="clearFilter('sectionNAF')">Effacer</span>
+                        </div>
+                        <div class="filter-options" id="filter-sectionNAF"></div>
+                    </div>
+                    <!-- Filtre Maturité -->
+                    <div class="filter-group">
+                        <div class="filter-group-title">
+                            Maturité prospect
+                            <span class="clear-btn" onclick="clearFilter('maturite')">Effacer</span>
+                        </div>
+                        <div class="filter-options" id="filter-maturite">
+                            <div class="filter-chip" data-filter="maturite" data-value="pret" onclick="toggleFilterChip(this)">🟢 Prêt</div>
+                            <div class="filter-chip" data-filter="maturite" data-value="bientot" onclick="toggleFilterChip(this)">🟠 Bientôt</div>
+                            <div class="filter-chip" data-filter="maturite" data-value="pasret" onclick="toggleFilterChip(this)">🔴 Pas prêt</div>
+                        </div>
+                    </div>
                     <!-- Filtre Statut prospect -->
                     <div class="filter-group">
                         <div class="filter-group-title">
@@ -835,7 +855,9 @@
         // Filtres actifs
         let activeFilters = {
             forme: new Set(),
-            statut: new Set()
+            statut: new Set(),
+            sectionNAF: new Set(),
+            maturite: new Set()
         };
         
         // ============================================
@@ -937,6 +959,22 @@
                     if (!activeFilters.forme.has(c.forme)) return false;
                 }
                 
+                // Filtre section NAF
+                if (activeFilters.sectionNAF.size > 0) {
+                    if (!activeFilters.sectionNAF.has(c.sectionNAF)) return false;
+                }
+                
+                // Filtre maturité
+                if (activeFilters.maturite.size > 0) {
+                    var mat = (c.maturite || '').toLowerCase();
+                    var matKey = '';
+                    if (mat.indexOf('prêt') !== -1 || mat.indexOf('pret') !== -1) matKey = 'pret';
+                    else if (mat.indexOf('bientôt') !== -1 || mat.indexOf('bientot') !== -1) matKey = 'bientot';
+                    else if (mat.indexOf('pas') !== -1) matKey = 'pasret';
+                    if (matKey && !activeFilters.maturite.has(matKey)) return false;
+                    if (!matKey && activeFilters.maturite.size > 0) return false;
+                }
+                
                 // Filtre statut prospect
                 if (activeFilters.statut.size > 0) {
                     const status = statuses[id] || 'a-voir';
@@ -983,6 +1021,38 @@
                 if (activeFilters.forme.has(forme)) chip.classList.add('active');
                 
                 formeContainer.appendChild(chip);
+            });
+            
+            // Section NAF — compter les occurrences
+            const nafCounts = {};
+            companies.forEach(function(c) {
+                if (c.sectionNAF && c.sectionNAF.trim()) {
+                    nafCounts[c.sectionNAF] = (nafCounts[c.sectionNAF] || 0) + 1;
+                }
+            });
+            
+            const nafContainer = document.getElementById('filter-sectionNAF');
+            nafContainer.innerHTML = '';
+            
+            const sortedNAFs = Object.entries(nafCounts).sort(function(a, b) { return b[1] - a[1]; });
+            
+            sortedNAFs.forEach(function(entry) {
+                const naf = entry[0];
+                const count = entry[1];
+                const chip = document.createElement('div');
+                chip.className = 'filter-chip';
+                chip.dataset.filter = 'sectionNAF';
+                chip.dataset.value = naf;
+                chip.onclick = function() { toggleFilterChip(this); };
+                
+                let label = naf;
+                if (label.length > 35) label = label.substring(0, 33) + '...';
+                
+                chip.innerHTML = label + ' <span class="count">(' + count + ')</span>';
+                
+                if (activeFilters.sectionNAF.has(naf)) chip.classList.add('active');
+                
+                nafContainer.appendChild(chip);
             });
         }
         
@@ -1059,6 +1129,11 @@
             const colSite = findCol(['site_web', 'site']);
             const colContexte = findCol(['contexte_ia', 'contexte']);
             const colReps = findCol(['représentants', 'representants']);
+            const colCodeNAF = findCol(['code_naf']);
+            const colSectionNAF = findCol(['section_naf']);
+            const colEffectifs = findCol(['effectifs']);
+            const colMaturite = findCol(['maturité', 'maturite']);
+            const colDateExp = findCol(['date_expiration']);
             
             const data = [];
             
@@ -1104,6 +1179,11 @@
                     siteWeb: site,
                     contexteIA: contexte,
                     representants: reps,
+                    codeNAF: colCodeNAF !== -1 ? String(values[colCodeNAF] || '').trim() : '',
+                    sectionNAF: colSectionNAF !== -1 ? String(values[colSectionNAF] || '').trim() : '',
+                    effectifs: colEffectifs !== -1 ? String(values[colEffectifs] || '').trim() : '',
+                    maturite: colMaturite !== -1 ? String(values[colMaturite] || '').trim() : '',
+                    dateExpiration: colDateExp !== -1 ? String(values[colDateExp] || '').trim() : '',
                     lat: lat,
                     lng: lng
                 };
@@ -1141,13 +1221,20 @@
             return { 'a-voir': '#e53935', 'visite': '#FB8C00', 'signe': '#00897B' }[status] || '#e53935';
         }
         
-        function createIcon(status, hasPhone) {
+        function createIcon(status, hasPhone, maturite) {
             const color = getMarkerColor(status);
             const phoneIndicator = hasPhone ? '<div style="position:absolute;top:-4px;right:-4px;background:#2e7d32;border-radius:50%;width:10px;height:10px;border:1.5px solid white;"></div>' : '';
             
+            // Maturité indicator (bottom-left)
+            var matColor = '';
+            if (maturite && maturite.indexOf('Prêt') !== -1) matColor = '#2e7d32';
+            else if (maturite && maturite.indexOf('Bientôt') !== -1) matColor = '#FB8C00';
+            else if (maturite && maturite.indexOf('Pas') !== -1) matColor = '#c62828';
+            const matIndicator = matColor ? '<div style="position:absolute;bottom:-4px;left:-4px;background:' + matColor + ';border-radius:50%;width:8px;height:8px;border:1.5px solid white;"></div>' : '';
+            
             return L.divIcon({
                 className: 'marker',
-                html: '<div style="position:relative;"><div style="width:20px;height:20px;background:' + color + ';border:2.5px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>' + phoneIndicator + '</div>',
+                html: '<div style="position:relative;"><div style="width:20px;height:20px;background:' + color + ';border:2.5px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>' + phoneIndicator + matIndicator + '</div>',
                 iconSize: [20, 20],
                 iconAnchor: [10, 10]
             });
@@ -1163,7 +1250,7 @@
                 const hasPhone = c.telephone && c.telephone.length > 0;
                 
                 try {
-                    const marker = L.marker([c.lat, c.lng], { icon: createIcon(status, hasPhone) }).addTo(map);
+                    const marker = L.marker([c.lat, c.lng], { icon: createIcon(status, hasPhone, c.maturite) }).addTo(map);
                     marker.bindPopup(createPopup(c, status, id), { maxWidth: 400 });
                     marker.on('click', function() { selectCompany(id); });
                     markers[id] = marker;
@@ -1213,8 +1300,19 @@
             if (c.rcsLink) btns += '<a href="' + c.rcsLink + '" target="_blank" class="btn-action btn-rcs">📋 RCS</a>';
             btns += '</div>';
             
+            // Maturité badge
+            var matBadge = '';
+            if (c.maturite) {
+                matBadge = '<div style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-bottom:8px;' +
+                    (c.maturite.indexOf('Prêt') !== -1 ? 'background:#e8f5e9;color:#2e7d32;' :
+                     c.maturite.indexOf('Bientôt') !== -1 ? 'background:#fff3e0;color:#e65100;' :
+                     'background:#fce4ec;color:#c62828;') +
+                    '">' + c.maturite + '</div>';
+            }
+            
             return '<div class="custom-popup">' +
                 '<div class="popup-title">' + (c.name || 'Sans nom') + '</div>' +
+                matBadge +
                 contactHtml + iaHtml +
                 '<div class="popup-section">' +
                     '<div class="popup-section-title">Informations</div>' +
@@ -1223,6 +1321,10 @@
                     '<div class="popup-info"><span class="popup-label">Forme</span> ' + (c.forme || '-') + '</div>' +
                     '<div class="popup-info"><span class="popup-label">SIREN</span> ' + (c.siren || '-') + '</div>' +
                     '<div class="popup-info"><span class="popup-label">Début</span> ' + (c.debut || '-') + '</div>' +
+                    (c.codeNAF ? '<div class="popup-info"><span class="popup-label">Code NAF</span> ' + c.codeNAF + '</div>' : '') +
+                    (c.sectionNAF ? '<div class="popup-info"><span class="popup-label">Secteur</span> <span style="font-size:11px;">' + c.sectionNAF + '</span></div>' : '') +
+                    (c.effectifs ? '<div class="popup-info"><span class="popup-label">Effectifs</span> ' + c.effectifs + '</div>' : '') +
+                    (c.dateExpiration ? '<div class="popup-info"><span class="popup-label">Expire le</span> ' + c.dateExpiration + '</div>' : '') +
                 '</div>' +
                 btns +
                 '<div class="status-selector">' +
@@ -1329,15 +1431,24 @@
                 const hasSite = c.siteWeb && c.siteWeb.length > 0;
                 const hasIA = c.contexteIA && c.contexteIA.length > 0;
                 
+                // Maturité dot
+                var matDot = '';
+                if (c.maturite) {
+                    if (c.maturite.indexOf('Prêt') !== -1) matDot = '<span style="color:#2e7d32;" title="Prêt">🟢</span>';
+                    else if (c.maturite.indexOf('Bientôt') !== -1) matDot = '<span style="color:#e65100;" title="Bientôt prêt">🟠</span>';
+                    else if (c.maturite.indexOf('Pas') !== -1) matDot = '<span style="color:#c62828;" title="Pas encore prêt">🔴</span>';
+                }
+                
                 const item = document.createElement('div');
                 item.className = 'company-item';
                 item.dataset.id = id;
                 item.innerHTML =
-                    '<div class="company-name">' + (c.name || 'Sans nom') + '</div>' +
+                    '<div class="company-name">' + (c.name || 'Sans nom') + ' ' + matDot + '</div>' +
                     '<div class="company-address">' + (c.address || '-') + '</div>' +
                     '<div class="company-meta">' +
                         '<span class="company-status status-' + status + '">' + statusText[status] + '</span>' +
                         (c.forme ? '<span class="company-forme">' + c.forme + '</span>' : '') +
+                        (c.codeNAF ? '<span class="company-forme">' + c.codeNAF + '</span>' : '') +
                         '<div class="company-contact-icons">' +
                             '<span class="contact-icon ' + (hasPhone ? 'active' : '') + '">📞</span>' +
                             '<span class="contact-icon ' + (hasSite ? 'active' : '') + '">🌐</span>' +
@@ -1383,7 +1494,7 @@
             const c = companies.find(function(x) { return (x.siren || ('c_' + companies.indexOf(x))) === id; });
             if (c && markers[id]) {
                 const hasPhone = c.telephone && c.telephone.length > 0;
-                markers[id].setIcon(createIcon(newStatus, hasPhone));
+                markers[id].setIcon(createIcon(newStatus, hasPhone, c.maturite));
                 markers[id].setPopupContent(createPopup(c, newStatus, id));
             }
             
