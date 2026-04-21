@@ -404,6 +404,134 @@
             border-color: #0097A7;
         }
         
+        /* ===== RECHERCHE NAF ===== */
+        .naf-search-group {
+            margin-bottom: 8px;
+        }
+        
+        .naf-input-wrapper {
+            position: relative;
+        }
+        
+        .naf-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1.5px solid #0097A7;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .naf-suggestions.active {
+            display: block;
+        }
+        
+        .naf-suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.1s;
+        }
+        
+        .naf-suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .naf-suggestion-item:hover {
+            background: #e0f2f1;
+        }
+        
+        .naf-suggestion-item .naf-code {
+            font-weight: 700;
+            color: #0097A7;
+            margin-right: 8px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+        
+        .naf-suggestion-item .naf-label {
+            color: #5f6368;
+        }
+        
+        .naf-suggestion-item .naf-count {
+            float: right;
+            font-size: 10px;
+            color: #999;
+            background: #f0f0f0;
+            padding: 1px 6px;
+            border-radius: 8px;
+        }
+        
+        .naf-active-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+        
+        .naf-active-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #e0f2f1;
+            color: #006064;
+            padding: 3px 4px 3px 9px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        .naf-active-chip .remove {
+            cursor: pointer;
+            background: #0097A7;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            line-height: 1;
+            transition: background 0.15s;
+        }
+        
+        .naf-active-chip .remove:hover {
+            background: #c62828;
+        }
+        
+        .naf-section-divider {
+            text-align: center;
+            margin: 14px 0 8px;
+            position: relative;
+            font-size: 10px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .naf-section-divider::before,
+        .naf-section-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: calc(50% - 80px);
+            height: 1px;
+            background: #e0e0e0;
+        }
+        
+        .naf-section-divider::before { left: 0; }
+        .naf-section-divider::after { right: 0; }
+        
         /* ===== RECHERCHE ===== */
         .search-box {
             padding: 10px 18px;
@@ -975,8 +1103,20 @@
                     </div>
                     <div class="filter-accordion-body" id="body-sectionNAF">
                         <div class="filter-accordion-inner">
+                            <!-- Recherche par code NAF précis -->
+                            <div class="naf-search-group">
+                                <label class="cp-input-label" for="naf-input">Code NAF ou mot-clé</label>
+                                <div class="naf-input-wrapper">
+                                    <input type="text" class="cp-input" id="naf-input" placeholder="Ex: 56.11, restaurant, conseil..." autocomplete="off">
+                                    <div class="naf-suggestions" id="naf-suggestions"></div>
+                                </div>
+                                <div class="naf-active-chips" id="naf-active-chips"></div>
+                            </div>
+                            <div class="naf-section-divider">
+                                <span>ou filtrer par grande section</span>
+                            </div>
                             <div class="filter-group-header">
-                                <span class="filter-group-subtitle">Par section NAF</span>
+                                <span class="filter-group-subtitle">Section NAF</span>
                                 <span class="clear-btn-local hidden" id="clear-sectionNAF" onclick="clearFilter('sectionNAF')">Effacer</span>
                             </div>
                             <div class="filter-options" id="filter-sectionNAF"></div>
@@ -1073,9 +1213,11 @@
             statut: new Set(),
             sectionNAF: new Set(),
             maturite: new Set(),
-            commune: new Set()
+            commune: new Set(),
+            naf: new Set()  // Codes NAF précis ou préfixes (ex: "56.11", "62")
         };
         let activeCP = ''; // Filtre code postal (champ texte)
+        let nafIndex = []; // Index des codes NAF avec leurs libellés et comptes
         
         // ============================================
         // IDENTIFICATION UTILISATEUR
@@ -1175,6 +1317,9 @@
             document.querySelectorAll('[data-filter="' + filterType + '"]').forEach(function(chip) {
                 chip.classList.remove('active');
             });
+            if (filterType === 'naf') {
+                renderNafActiveChips();
+            }
             applyFilters();
         }
         
@@ -1188,9 +1333,12 @@
             document.querySelectorAll('.filter-chip').forEach(function(chip) {
                 chip.classList.remove('active');
             });
-            // Vider la recherche et le CP
+            // Vider la recherche, le CP et le NAF
             document.getElementById('search-input').value = '';
             document.getElementById('cp-input').value = '';
+            document.getElementById('naf-input').value = '';
+            document.getElementById('naf-suggestions').classList.remove('active');
+            renderNafActiveChips();
             applyFilters();
         }
         
@@ -1232,6 +1380,19 @@
                     if (!activeFilters.sectionNAF.has(c.sectionNAF)) return false;
                 }
                 
+                // Filtre code NAF précis (supporte les préfixes)
+                // Ex: si l'utilisateur a ajouté "56.11", on matche "56.11A", "56.11B", etc.
+                // Ex: si l'utilisateur a ajouté "62", on matche "62.01Z", "62.02A", etc.
+                if (activeFilters.naf.size > 0) {
+                    var codeEnt = (c.codeNAF || '').toString().trim();
+                    if (!codeEnt) return false;
+                    var matchNAF = false;
+                    activeFilters.naf.forEach(function(prefix) {
+                        if (codeEnt.indexOf(prefix) === 0) matchNAF = true;
+                    });
+                    if (!matchNAF) return false;
+                }
+                
                 // Filtre maturité
                 if (activeFilters.maturite.size > 0) {
                     var mat = (c.maturite || '').toLowerCase();
@@ -1266,7 +1427,7 @@
             var counts = {
                 zone: activeFilters.commune.size + (activeCP ? 1 : 0),
                 maturite: activeFilters.maturite.size,
-                sectionNAF: activeFilters.sectionNAF.size,
+                sectionNAF: activeFilters.sectionNAF.size + activeFilters.naf.size,
                 forme: activeFilters.forme.size,
                 statut: activeFilters.statut.size
             };
@@ -1307,6 +1468,7 @@
             var nbActiveFilters = activeFilters.commune.size + 
                                   activeFilters.maturite.size + 
                                   activeFilters.sectionNAF.size + 
+                                  activeFilters.naf.size +
                                   activeFilters.forme.size + 
                                   activeFilters.statut.size + 
                                   (activeCP ? 1 : 0) +
@@ -1320,6 +1482,172 @@
             
             // Activer/désactiver le bouton reset
             document.getElementById('btn-reset-all').disabled = (nbActiveFilters === 0);
+        }
+        
+        // ============================================
+        // RECHERCHE CODE NAF + AUTOCOMPLETE
+        // ============================================
+        // Construit l'index des codes NAF présents dans les données
+        // Format : [{code: "56.11A", label: "Restauration traditionnelle", count: 45}, ...]
+        function buildNafIndex() {
+            var map = {};
+            companies.forEach(function(c) {
+                var code = (c.codeNAF || '').toString().trim();
+                if (!code) return;
+                if (!map[code]) {
+                    // Le libellé "Activité" contient "56.11A — Libellé" dans les données importées
+                    var label = '';
+                    if (c.activite) {
+                        var parts = c.activite.split('—');
+                        if (parts.length >= 2) {
+                            label = parts.slice(1).join('—').trim();
+                        } else {
+                            label = c.activite.replace(code, '').replace(/^[\s\-—]+/, '').trim();
+                        }
+                    }
+                    if (!label && c.sectionNAF) label = c.sectionNAF;
+                    map[code] = { code: code, label: label, count: 0 };
+                }
+                map[code].count++;
+            });
+            nafIndex = Object.values(map).sort(function(a, b) {
+                return a.code.localeCompare(b.code);
+            });
+        }
+        
+        function filterNafSuggestions(query) {
+            query = query.trim().toLowerCase();
+            if (!query) return [];
+            
+            var results = nafIndex.filter(function(item) {
+                var codeMatch = item.code.toLowerCase().indexOf(query) !== -1;
+                var labelMatch = item.label && item.label.toLowerCase().indexOf(query) !== -1;
+                return codeMatch || labelMatch;
+            });
+            
+            // Tri : les codes qui commencent par la query en premier, puis les autres
+            results.sort(function(a, b) {
+                var aStartsWith = a.code.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+                var bStartsWith = b.code.toLowerCase().indexOf(query) === 0 ? 0 : 1;
+                if (aStartsWith !== bStartsWith) return aStartsWith - bStartsWith;
+                return b.count - a.count; // À égalité, le plus fréquent en premier
+            });
+            
+            return results.slice(0, 15); // Max 15 suggestions
+        }
+        
+        function renderNafSuggestions(query) {
+            var container = document.getElementById('naf-suggestions');
+            var suggestions = filterNafSuggestions(query);
+            
+            if (suggestions.length === 0) {
+                if (query && query.length >= 2) {
+                    // Proposer quand même d'ajouter le code brut comme préfixe (même sans match exact)
+                    container.innerHTML = '<div class="naf-suggestion-item" onclick="addNafFilter(\'' + 
+                        query.replace(/'/g, "\\'") + '\', null)">' +
+                        '<span class="naf-code">' + query.toUpperCase() + '</span>' +
+                        '<span class="naf-label" style="font-style:italic;color:#888;">Utiliser comme préfixe</span>' +
+                        '</div>';
+                    container.classList.add('active');
+                } else {
+                    container.classList.remove('active');
+                }
+                return;
+            }
+            
+            var html = '';
+            suggestions.forEach(function(item) {
+                var label = item.label || '';
+                if (label.length > 50) label = label.substring(0, 48) + '...';
+                html += '<div class="naf-suggestion-item" onclick="addNafFilter(\'' + 
+                    item.code.replace(/'/g, "\\'") + '\', \'' + 
+                    label.replace(/'/g, "\\'") + '\')">' +
+                    '<span class="naf-code">' + item.code + '</span>' +
+                    '<span class="naf-label">' + label + '</span>' +
+                    '<span class="naf-count">' + item.count + '</span>' +
+                    '</div>';
+            });
+            
+            container.innerHTML = html;
+            container.classList.add('active');
+        }
+        
+        function addNafFilter(code, label) {
+            code = code.toString().trim().toUpperCase();
+            if (!code) return;
+            
+            activeFilters.naf.add(code);
+            
+            // Vider le champ et fermer les suggestions
+            document.getElementById('naf-input').value = '';
+            document.getElementById('naf-suggestions').classList.remove('active');
+            
+            renderNafActiveChips();
+            applyFilters();
+        }
+        
+        function removeNafFilter(code) {
+            activeFilters.naf.delete(code);
+            renderNafActiveChips();
+            applyFilters();
+        }
+        
+        function renderNafActiveChips() {
+            var container = document.getElementById('naf-active-chips');
+            if (!container) return;
+            
+            if (activeFilters.naf.size === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            var html = '';
+            activeFilters.naf.forEach(function(code) {
+                html += '<div class="naf-active-chip">' +
+                    code +
+                    '<span class="remove" onclick="removeNafFilter(\'' + code.replace(/'/g, "\\'") + '\')">×</span>' +
+                    '</div>';
+            });
+            container.innerHTML = html;
+        }
+        
+        function setupNafInput() {
+            var input = document.getElementById('naf-input');
+            var container = document.getElementById('naf-suggestions');
+            if (!input || input.dataset.bound) return;
+            
+            input.addEventListener('input', function() {
+                renderNafSuggestions(this.value);
+            });
+            
+            input.addEventListener('focus', function() {
+                if (this.value.trim()) renderNafSuggestions(this.value);
+            });
+            
+            // Entrée : ajouter la première suggestion, ou le texte brut si pas de suggestion
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    var firstSuggestion = container.querySelector('.naf-suggestion-item');
+                    if (firstSuggestion) {
+                        firstSuggestion.click();
+                    } else if (this.value.trim()) {
+                        addNafFilter(this.value, null);
+                    }
+                }
+                if (e.key === 'Escape') {
+                    container.classList.remove('active');
+                }
+            });
+            
+            // Fermer les suggestions au clic hors champ
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !container.contains(e.target)) {
+                    container.classList.remove('active');
+                }
+            });
+            
+            input.dataset.bound = '1';
         }
         
         // ============================================
@@ -1470,6 +1798,8 @@
                 saveStatuses();
                 
                 buildFilterChips();
+                buildNafIndex();
+                setupNafInput();
                 applyFilters();
                 updateStats();
                 
@@ -1513,6 +1843,7 @@
             const colReps = findCol(['représentants', 'representants']);
             const colCodeNAF = findCol(['code_naf']);
             const colSectionNAF = findCol(['section_naf']);
+            const colActivite = findCol(['activité', 'activite']);
             const colEffectifs = findCol(['effectifs']);
             const colMaturite = findCol(['maturité', 'maturite']);
             const colDateExp = findCol(['date_expiration']);
@@ -1563,6 +1894,7 @@
                     representants: reps,
                     codeNAF: colCodeNAF !== -1 ? String(values[colCodeNAF] || '').trim() : '',
                     sectionNAF: colSectionNAF !== -1 ? String(values[colSectionNAF] || '').trim() : '',
+                    activite: colActivite !== -1 ? String(values[colActivite] || '').trim() : '',
                     effectifs: colEffectifs !== -1 ? String(values[colEffectifs] || '').trim() : '',
                     maturite: colMaturite !== -1 ? String(values[colMaturite] || '').trim() : '',
                     dateExpiration: colDateExp !== -1 ? String(values[colDateExp] || '').trim() : '',
