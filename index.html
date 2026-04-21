@@ -161,81 +161,184 @@
         .status-visite { background: #FB8C00; }
         .status-signe { background: #00897B; }
         
-        /* ===== FILTRES ===== */
+        /* ===== BARRE D'ÉTAT (sous le header) ===== */
+        .status-bar {
+            padding: 10px 18px;
+            background: #fafbfc;
+            border-bottom: 1px solid #e8eaed;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 12px;
+        }
+        
+        .status-bar-text {
+            color: #5f6368;
+            font-weight: 500;
+        }
+        
+        .status-bar-text .count-main {
+            color: #0097A7;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .status-bar-text .filters-active-indicator {
+            display: inline-block;
+            background: #0097A7;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+        
+        .btn-reset-all {
+            background: white;
+            border: 1.5px solid #e0e0e0;
+            color: #5f6368;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        
+        .btn-reset-all:hover {
+            border-color: #e53935;
+            color: #e53935;
+        }
+        
+        .btn-reset-all:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        /* ===== FILTRES - ACCORDÉONS ===== */
         .filters-section {
-            padding: 12px 18px;
-            background: #f8f9fb;
+            background: white;
             border-bottom: 1px solid #e8eaed;
         }
         
-        .filters-toggle {
+        .filter-accordion {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .filter-accordion:last-child {
+            border-bottom: none;
+        }
+        
+        .filter-accordion-header {
+            padding: 11px 18px;
+            cursor: pointer;
+            user-select: none;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            cursor: pointer;
-            user-select: none;
+            transition: background 0.15s;
         }
         
-        .filters-toggle h3 {
-            font-size: 13px;
-            font-weight: 600;
-            color: #5f6368;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .filter-accordion-header:hover {
+            background: #f8f9fb;
         }
         
-        .filters-toggle .arrow {
-            transition: transform 0.2s;
+        .filter-accordion-header.has-active {
+            background: #e0f2f1;
+        }
+        
+        .filter-accordion-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 12px;
-            color: #5f6368;
+            font-weight: 600;
+            color: #1a1a2e;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
         }
         
-        .filters-toggle .arrow.open { transform: rotate(180deg); }
+        .filter-accordion-title .filter-icon {
+            font-size: 14px;
+        }
         
-        .filters-body {
+        .filter-accordion-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            background: #0097A7;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 9px;
+            padding: 0 6px;
+        }
+        
+        .filter-accordion-arrow {
+            font-size: 11px;
+            color: #999;
+            transition: transform 0.2s;
+        }
+        
+        .filter-accordion-arrow.open {
+            transform: rotate(180deg);
+        }
+        
+        .filter-accordion-body {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease;
+            transition: max-height 0.25s ease;
         }
         
-        .filters-body.open {
-            max-height: 400px;
+        .filter-accordion-body.open {
+            max-height: 320px;
             overflow-y: auto;
         }
         
-        .filter-group {
-            margin-top: 10px;
+        .filter-accordion-inner {
+            padding: 4px 18px 14px;
         }
         
-        .filter-group-title {
-            font-size: 11px;
-            font-weight: 700;
-            color: #0097A7;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 6px;
+        .filter-group-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-bottom: 8px;
         }
         
-        .filter-group-title .clear-btn {
-            font-size: 10px;
-            color: #999;
-            cursor: pointer;
+        .filter-group-subtitle {
+            font-size: 11px;
+            color: #888;
             font-weight: 500;
-            text-transform: none;
-            letter-spacing: 0;
         }
         
-        .filter-group-title .clear-btn:hover { color: #e53935; }
+        .clear-btn-local {
+            font-size: 10px;
+            color: #c62828;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+        
+        .clear-btn-local:hover {
+            background: #ffebee;
+        }
+        
+        .clear-btn-local.hidden {
+            visibility: hidden;
+        }
         
         .filter-options {
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
-            max-height: 120px;
-            overflow-y: auto;
+            gap: 5px;
             padding: 2px 0;
         }
         
@@ -243,7 +346,7 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 3px 10px;
+            padding: 4px 11px;
             border-radius: 14px;
             font-size: 11px;
             font-weight: 500;
@@ -269,6 +372,36 @@
         .filter-chip .count {
             font-size: 10px;
             opacity: 0.7;
+        }
+        
+        /* Champ CP texte */
+        .cp-input-group {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e0e0e0;
+        }
+        
+        .cp-input-label {
+            font-size: 11px;
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .cp-input {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        
+        .cp-input:focus {
+            border-color: #0097A7;
         }
         
         /* ===== RECHERCHE ===== */
@@ -767,54 +900,136 @@
                 </div>
             </div>
             
-            <!-- FILTRES -->
+            <!-- BARRE D'ÉTAT -->
+            <div class="status-bar">
+                <div class="status-bar-text" id="status-bar-text">
+                    <span class="count-main" id="count-main">0</span> entreprises
+                </div>
+                <button class="btn-reset-all" id="btn-reset-all" onclick="resetAllFilters()" disabled>
+                    Réinitialiser
+                </button>
+            </div>
+            
+            <!-- FILTRES - ACCORDÉONS -->
             <div class="filters-section">
-                <div class="filters-toggle" onclick="toggleFilters()">
-                    <h3>Filtres</h3>
-                    <span class="arrow" id="filters-arrow">▼</span>
-                </div>
-                <div class="filters-body" id="filters-body">
-                    <!-- Filtre Forme Juridique -->
-                    <div class="filter-group">
-                        <div class="filter-group-title">
-                            Forme juridique
-                            <span class="clear-btn" onclick="clearFilter('forme')">Effacer</span>
+                
+                <!-- ZONE GÉOGRAPHIQUE (communes + CP) -->
+                <div class="filter-accordion" id="accordion-zone">
+                    <div class="filter-accordion-header" onclick="toggleAccordion('zone')">
+                        <div class="filter-accordion-title">
+                            <span class="filter-icon">📍</span>
+                            <span>Zone</span>
+                            <span class="filter-accordion-badge" id="badge-zone" style="display:none;">0</span>
                         </div>
-                        <div class="filter-options" id="filter-forme"></div>
+                        <span class="filter-accordion-arrow" id="arrow-zone">▼</span>
                     </div>
-                    <!-- Filtre Section NAF -->
-                    <div class="filter-group">
-                        <div class="filter-group-title">
-                            Secteur d'activité (NAF)
-                            <span class="clear-btn" onclick="clearFilter('sectionNAF')">Effacer</span>
-                        </div>
-                        <div class="filter-options" id="filter-sectionNAF"></div>
-                    </div>
-                    <!-- Filtre Maturité -->
-                    <div class="filter-group">
-                        <div class="filter-group-title">
-                            Maturité prospect
-                            <span class="clear-btn" onclick="clearFilter('maturite')">Effacer</span>
-                        </div>
-                        <div class="filter-options" id="filter-maturite">
-                            <div class="filter-chip" data-filter="maturite" data-value="pret" onclick="toggleFilterChip(this)">🟢 Prêt</div>
-                            <div class="filter-chip" data-filter="maturite" data-value="bientot" onclick="toggleFilterChip(this)">🟠 Bientôt</div>
-                            <div class="filter-chip" data-filter="maturite" data-value="pasret" onclick="toggleFilterChip(this)">🔴 Pas prêt</div>
-                        </div>
-                    </div>
-                    <!-- Filtre Statut prospect -->
-                    <div class="filter-group">
-                        <div class="filter-group-title">
-                            Statut prospect
-                            <span class="clear-btn" onclick="clearFilter('statut')">Effacer</span>
-                        </div>
-                        <div class="filter-options" id="filter-statut">
-                            <div class="filter-chip" data-filter="statut" data-value="a-voir" onclick="toggleFilterChip(this)">À voir</div>
-                            <div class="filter-chip" data-filter="statut" data-value="visite" onclick="toggleFilterChip(this)">Visité</div>
-                            <div class="filter-chip" data-filter="statut" data-value="signe" onclick="toggleFilterChip(this)">Signé</div>
+                    <div class="filter-accordion-body" id="body-zone">
+                        <div class="filter-accordion-inner">
+                            <div class="filter-group-header">
+                                <span class="filter-group-subtitle">Communes</span>
+                                <span class="clear-btn-local hidden" id="clear-commune" onclick="clearFilter('commune')">Effacer</span>
+                            </div>
+                            <div class="filter-options" id="filter-commune"></div>
+                            <div class="cp-input-group">
+                                <label class="cp-input-label" for="cp-input">Code postal précis (optionnel)</label>
+                                <input type="text" class="cp-input" id="cp-input" placeholder="Ex: 97400, 97410..." maxlength="5">
+                            </div>
                         </div>
                     </div>
                 </div>
+                
+                <!-- MATURITÉ -->
+                <div class="filter-accordion" id="accordion-maturite">
+                    <div class="filter-accordion-header" onclick="toggleAccordion('maturite')">
+                        <div class="filter-accordion-title">
+                            <span class="filter-icon">⏱️</span>
+                            <span>Maturité</span>
+                            <span class="filter-accordion-badge" id="badge-maturite" style="display:none;">0</span>
+                        </div>
+                        <span class="filter-accordion-arrow" id="arrow-maturite">▼</span>
+                    </div>
+                    <div class="filter-accordion-body" id="body-maturite">
+                        <div class="filter-accordion-inner">
+                            <div class="filter-group-header">
+                                <span class="filter-group-subtitle">Prêt à prospecter ?</span>
+                                <span class="clear-btn-local hidden" id="clear-maturite" onclick="clearFilter('maturite')">Effacer</span>
+                            </div>
+                            <div class="filter-options" id="filter-maturite">
+                                <div class="filter-chip" data-filter="maturite" data-value="pret" onclick="toggleFilterChip(this)">🟢 Prêt</div>
+                                <div class="filter-chip" data-filter="maturite" data-value="bientot" onclick="toggleFilterChip(this)">🟠 Bientôt</div>
+                                <div class="filter-chip" data-filter="maturite" data-value="pasret" onclick="toggleFilterChip(this)">🔴 Pas prêt</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTEUR D'ACTIVITÉ -->
+                <div class="filter-accordion" id="accordion-sectionNAF">
+                    <div class="filter-accordion-header" onclick="toggleAccordion('sectionNAF')">
+                        <div class="filter-accordion-title">
+                            <span class="filter-icon">🏷️</span>
+                            <span>Secteur d'activité</span>
+                            <span class="filter-accordion-badge" id="badge-sectionNAF" style="display:none;">0</span>
+                        </div>
+                        <span class="filter-accordion-arrow" id="arrow-sectionNAF">▼</span>
+                    </div>
+                    <div class="filter-accordion-body" id="body-sectionNAF">
+                        <div class="filter-accordion-inner">
+                            <div class="filter-group-header">
+                                <span class="filter-group-subtitle">Par section NAF</span>
+                                <span class="clear-btn-local hidden" id="clear-sectionNAF" onclick="clearFilter('sectionNAF')">Effacer</span>
+                            </div>
+                            <div class="filter-options" id="filter-sectionNAF"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FORME JURIDIQUE -->
+                <div class="filter-accordion" id="accordion-forme">
+                    <div class="filter-accordion-header" onclick="toggleAccordion('forme')">
+                        <div class="filter-accordion-title">
+                            <span class="filter-icon">🏢</span>
+                            <span>Forme juridique</span>
+                            <span class="filter-accordion-badge" id="badge-forme" style="display:none;">0</span>
+                        </div>
+                        <span class="filter-accordion-arrow" id="arrow-forme">▼</span>
+                    </div>
+                    <div class="filter-accordion-body" id="body-forme">
+                        <div class="filter-accordion-inner">
+                            <div class="filter-group-header">
+                                <span class="filter-group-subtitle">SAS, SARL, EI...</span>
+                                <span class="clear-btn-local hidden" id="clear-forme" onclick="clearFilter('forme')">Effacer</span>
+                            </div>
+                            <div class="filter-options" id="filter-forme"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- STATUT PROSPECT -->
+                <div class="filter-accordion" id="accordion-statut">
+                    <div class="filter-accordion-header" onclick="toggleAccordion('statut')">
+                        <div class="filter-accordion-title">
+                            <span class="filter-icon">✅</span>
+                            <span>Statut prospect</span>
+                            <span class="filter-accordion-badge" id="badge-statut" style="display:none;">0</span>
+                        </div>
+                        <span class="filter-accordion-arrow" id="arrow-statut">▼</span>
+                    </div>
+                    <div class="filter-accordion-body" id="body-statut">
+                        <div class="filter-accordion-inner">
+                            <div class="filter-group-header">
+                                <span class="filter-group-subtitle">Où en êtes-vous ?</span>
+                                <span class="clear-btn-local hidden" id="clear-statut" onclick="clearFilter('statut')">Effacer</span>
+                            </div>
+                            <div class="filter-options" id="filter-statut">
+                                <div class="filter-chip" data-filter="statut" data-value="a-voir" onclick="toggleFilterChip(this)">À voir</div>
+                                <div class="filter-chip" data-filter="statut" data-value="visite" onclick="toggleFilterChip(this)">Visité</div>
+                                <div class="filter-chip" data-filter="statut" data-value="signe" onclick="toggleFilterChip(this)">Signé</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
             
             <div class="search-box">
@@ -857,8 +1072,10 @@
             forme: new Set(),
             statut: new Set(),
             sectionNAF: new Set(),
-            maturite: new Set()
+            maturite: new Set(),
+            commune: new Set()
         };
+        let activeCP = ''; // Filtre code postal (champ texte)
         
         // ============================================
         // IDENTIFICATION UTILISATEUR
@@ -907,11 +1124,33 @@
         }
         
         // ============================================
-        // FILTRES
+        // PARSING COMMUNE / CODE POSTAL
         // ============================================
-        function toggleFilters() {
-            const body = document.getElementById('filters-body');
-            const arrow = document.getElementById('filters-arrow');
+        // Extrait le code postal (5 chiffres commençant par 974) et la commune
+        // depuis une adresse libre type "15 Rue des Palmiers, 97400 Saint-Denis"
+        function parseCommuneAndCP(address) {
+            if (!address) return { commune: '', cp: '' };
+            var match = address.match(/\b(974\d{2})\s+([^,]+?)(?:,|$)/);
+            if (match) {
+                return {
+                    cp: match[1].trim(),
+                    commune: match[2].trim()
+                };
+            }
+            // Fallback: essayer de trouver juste le CP
+            var cpMatch = address.match(/\b(974\d{2})\b/);
+            return {
+                cp: cpMatch ? cpMatch[1] : '',
+                commune: ''
+            };
+        }
+        
+        // ============================================
+        // ACCORDÉONS FILTRES
+        // ============================================
+        function toggleAccordion(name) {
+            const body = document.getElementById('body-' + name);
+            const arrow = document.getElementById('arrow-' + name);
             body.classList.toggle('open');
             arrow.classList.toggle('open');
         }
@@ -939,19 +1178,48 @@
             applyFilters();
         }
         
+        function resetAllFilters() {
+            // Vider tous les sets
+            Object.keys(activeFilters).forEach(function(key) {
+                activeFilters[key].clear();
+            });
+            activeCP = '';
+            // Désactiver tous les chips visuellement
+            document.querySelectorAll('.filter-chip').forEach(function(chip) {
+                chip.classList.remove('active');
+            });
+            // Vider la recherche et le CP
+            document.getElementById('search-input').value = '';
+            document.getElementById('cp-input').value = '';
+            applyFilters();
+        }
+        
+        // ============================================
+        // FILTRAGE
+        // ============================================
         function applyFilters() {
             const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
             
             filteredCompanies = companies.filter(function(c, i) {
                 const id = c.siren || ('c_' + i);
                 
-                // Filtre recherche
+                // Filtre recherche texte libre
                 if (searchQuery) {
                     const match = (c.name && c.name.toLowerCase().includes(searchQuery)) ||
                         (c.address && c.address.toLowerCase().includes(searchQuery)) ||
                         (c.siren && c.siren.includes(searchQuery)) ||
                         (c.representants && c.representants.toLowerCase().includes(searchQuery));
                     if (!match) return false;
+                }
+                
+                // Filtre commune (multi-sélection)
+                if (activeFilters.commune.size > 0) {
+                    if (!c._commune || !activeFilters.commune.has(c._commune)) return false;
+                }
+                
+                // Filtre code postal (texte libre)
+                if (activeCP) {
+                    if (!c._cp || c._cp.indexOf(activeCP) !== 0) return false;
                 }
                 
                 // Filtre forme juridique
@@ -986,10 +1254,108 @@
             
             displayMarkers();
             displayCompanyList();
+            updateFilterBadges();
+            updateStatusBar();
         }
         
+        // ============================================
+        // MISE À JOUR BADGES ET BARRE D'ÉTAT
+        // ============================================
+        function updateFilterBadges() {
+            // Compter les filtres actifs par catégorie
+            var counts = {
+                zone: activeFilters.commune.size + (activeCP ? 1 : 0),
+                maturite: activeFilters.maturite.size,
+                sectionNAF: activeFilters.sectionNAF.size,
+                forme: activeFilters.forme.size,
+                statut: activeFilters.statut.size
+            };
+            
+            Object.keys(counts).forEach(function(key) {
+                var badge = document.getElementById('badge-' + key);
+                var header = document.querySelector('#accordion-' + key + ' .filter-accordion-header');
+                if (counts[key] > 0) {
+                    badge.style.display = 'inline-flex';
+                    badge.textContent = counts[key];
+                    if (header) header.classList.add('has-active');
+                } else {
+                    badge.style.display = 'none';
+                    if (header) header.classList.remove('has-active');
+                }
+            });
+            
+            // Afficher/masquer les boutons "Effacer" locaux
+            var localClearButtons = {
+                'clear-commune': activeFilters.commune.size > 0,
+                'clear-maturite': activeFilters.maturite.size > 0,
+                'clear-sectionNAF': activeFilters.sectionNAF.size > 0,
+                'clear-forme': activeFilters.forme.size > 0,
+                'clear-statut': activeFilters.statut.size > 0
+            };
+            Object.keys(localClearButtons).forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) {
+                    if (localClearButtons[id]) el.classList.remove('hidden');
+                    else el.classList.add('hidden');
+                }
+            });
+        }
+        
+        function updateStatusBar() {
+            var total = companies.length;
+            var shown = filteredCompanies.length;
+            var nbActiveFilters = activeFilters.commune.size + 
+                                  activeFilters.maturite.size + 
+                                  activeFilters.sectionNAF.size + 
+                                  activeFilters.forme.size + 
+                                  activeFilters.statut.size + 
+                                  (activeCP ? 1 : 0) +
+                                  (document.getElementById('search-input').value.trim() ? 1 : 0);
+            
+            var txt = '<span class="count-main">' + shown + '</span> / ' + total + ' entreprise' + (total > 1 ? 's' : '');
+            if (nbActiveFilters > 0) {
+                txt += '<span class="filters-active-indicator">' + nbActiveFilters + ' filtre' + (nbActiveFilters > 1 ? 's' : '') + '</span>';
+            }
+            document.getElementById('status-bar-text').innerHTML = txt;
+            
+            // Activer/désactiver le bouton reset
+            document.getElementById('btn-reset-all').disabled = (nbActiveFilters === 0);
+        }
+        
+        // ============================================
+        // CONSTRUCTION DES CHIPS DE FILTRES
+        // ============================================
         function buildFilterChips() {
-            // Forme juridique — compter les occurrences
+            // --- COMMUNES ---
+            const communeCounts = {};
+            companies.forEach(function(c) {
+                if (c._commune) {
+                    communeCounts[c._commune] = (communeCounts[c._commune] || 0) + 1;
+                }
+            });
+            
+            const communeContainer = document.getElementById('filter-commune');
+            communeContainer.innerHTML = '';
+            
+            // Trier alphabétiquement les communes (plus facile à parcourir pour un commercial)
+            const sortedCommunes = Object.entries(communeCounts).sort(function(a, b) { 
+                return a[0].localeCompare(b[0]); 
+            });
+            
+            sortedCommunes.forEach(function(entry) {
+                const commune = entry[0];
+                const count = entry[1];
+                const chip = document.createElement('div');
+                chip.className = 'filter-chip';
+                chip.dataset.filter = 'commune';
+                chip.dataset.value = commune;
+                chip.onclick = function() { toggleFilterChip(this); };
+                chip.innerHTML = commune + ' <span class="count">(' + count + ')</span>';
+                if (activeFilters.commune.has(commune)) chip.classList.add('active');
+                communeContainer.appendChild(chip);
+            });
+            
+            // --- FORME JURIDIQUE ---
             const formeCounts = {};
             companies.forEach(function(c) {
                 if (c.forme && c.forme.trim()) {
@@ -1000,7 +1366,6 @@
             const formeContainer = document.getElementById('filter-forme');
             formeContainer.innerHTML = '';
             
-            // Trier par count décroissant
             const sortedFormes = Object.entries(formeCounts).sort(function(a, b) { return b[1] - a[1]; });
             
             sortedFormes.forEach(function(entry) {
@@ -1012,7 +1377,6 @@
                 chip.dataset.value = forme;
                 chip.onclick = function() { toggleFilterChip(this); };
                 
-                // Raccourcir les noms longs
                 let label = forme;
                 if (label.length > 30) label = label.substring(0, 28) + '...';
                 
@@ -1023,7 +1387,7 @@
                 formeContainer.appendChild(chip);
             });
             
-            // Section NAF — compter les occurrences
+            // --- SECTION NAF ---
             const nafCounts = {};
             companies.forEach(function(c) {
                 if (c.sectionNAF && c.sectionNAF.trim()) {
@@ -1054,6 +1418,16 @@
                 
                 nafContainer.appendChild(chip);
             });
+            
+            // Initialiser le champ CP (listener)
+            var cpInput = document.getElementById('cp-input');
+            if (cpInput && !cpInput.dataset.bound) {
+                cpInput.addEventListener('input', function() {
+                    activeCP = this.value.trim();
+                    applyFilters();
+                });
+                cpInput.dataset.bound = '1';
+            }
         }
         
         // ============================================
@@ -1077,6 +1451,14 @@
                 
                 const csvText = await response.text();
                 companies = parseCSV(csvText);
+                
+                // Enrichissement : parser la commune et le CP depuis l'adresse
+                companies.forEach(function(c) {
+                    var parsed = parseCommuneAndCP(c.address);
+                    c._commune = parsed.commune;
+                    c._cp = parsed.cp;
+                });
+                
                 filteredCompanies = [...companies];
                 
                 statuses = loadStatuses();
