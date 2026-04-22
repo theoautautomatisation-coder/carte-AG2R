@@ -1267,8 +1267,53 @@
         }
         
         // ============================================
+        // CLASSIFICATION DES FORMES JURIDIQUES
+        // ============================================
+        // Regroupe les formes détaillées en 4 familles métier pour filtrage :
+        //   EI / SARL / SAS / Autre
+        // La forme détaillée reste affichée dans la popup.
+        function classifyForme(forme) {
+            if (!forme) return 'Autre';
+            var f = forme.toString().toUpperCase();
+            
+            // EI — Entrepreneur individuel
+            if (f.indexOf('ENTREPRENEUR INDIVIDUEL') !== -1) return 'EI';
+            if (f === 'CAT. 1000') return 'EI';
+            
+            // SAS / SASU (codes INSEE 57XX)
+            if (f.indexOf('SAS') !== -1 || f.indexOf('SASU') !== -1) return 'SAS';
+            if (/CAT\. 57\d{2}/.test(f)) return 'SAS';
+            
+            // SARL / EURL (codes INSEE 54XX)
+            if (f.indexOf('SARL') !== -1 || f.indexOf('EURL') !== -1) return 'SARL';
+            if (/CAT\. 54\d{2}/.test(f)) return 'SARL';
+            
+            // Tout le reste (SA, SCI, SNC, associations, coopératives, etc.)
+            return 'Autre';
+        }
+        
+        // ============================================
         // PARSING COMMUNE / CODE POSTAL
         // ============================================
+        // Normalise un nom de commune pour éviter les doublons
+        // ("SAINT PIERRE", "Saint-Pierre", "ST PIERRE" -> "SAINT-PIERRE")
+        function normalizeCommune(name) {
+            if (!name) return '';
+            var s = name.toString().toUpperCase().trim();
+            // Supprimer accents
+            s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            // ST / STE -> SAINT / SAINTE (en début de mot uniquement)
+            s = s.replace(/\bSTE\b/g, 'SAINTE');
+            s = s.replace(/\bST\b/g, 'SAINT');
+            // Remplacer tous espaces et underscores par des tirets
+            s = s.replace(/[\s_]+/g, '-');
+            // Supprimer doubles tirets éventuels
+            s = s.replace(/-+/g, '-');
+            // Supprimer tirets en début/fin
+            s = s.replace(/^-|-$/g, '');
+            return s;
+        }
+        
         // Extrait le code postal (5 chiffres commençant par 974) et la commune
         // depuis une adresse libre type "15 Rue des Palmiers, 97400 Saint-Denis"
         function parseCommuneAndCP(address) {
@@ -1277,7 +1322,7 @@
             if (match) {
                 return {
                     cp: match[1].trim(),
-                    commune: match[2].trim()
+                    commune: normalizeCommune(match[2])
                 };
             }
             // Fallback: essayer de trouver juste le CP
@@ -1371,9 +1416,9 @@
                     if (!c._cp || c._cp.indexOf(activeCP) !== 0) return false;
                 }
                 
-                // Filtre forme juridique
+                // Filtre forme juridique (par famille regroupée)
                 if (activeFilters.forme.size > 0) {
-                    if (!activeFilters.forme.has(c.forme)) return false;
+                    if (!activeFilters.forme.has(c._formeFamille)) return false;
                 }
                 
                 // Filtre section NAF
@@ -1684,35 +1729,31 @@
                 communeContainer.appendChild(chip);
             });
             
-            // --- FORME JURIDIQUE ---
-            const formeCounts = {};
+            // --- FORME JURIDIQUE (regroupée en 4 familles) ---
+            const formeCounts = { 'EI': 0, 'SARL': 0, 'SAS': 0, 'Autre': 0 };
             companies.forEach(function(c) {
-                if (c.forme && c.forme.trim()) {
-                    formeCounts[c.forme] = (formeCounts[c.forme] || 0) + 1;
+                var fam = c._formeFamille || 'Autre';
+                if (formeCounts[fam] !== undefined) {
+                    formeCounts[fam]++;
                 }
             });
             
             const formeContainer = document.getElementById('filter-forme');
             formeContainer.innerHTML = '';
             
-            const sortedFormes = Object.entries(formeCounts).sort(function(a, b) { return b[1] - a[1]; });
+            // Ordre fixe : les plus fréquents en premier, Autre à la fin
+            const formeOrder = ['EI', 'SARL', 'SAS', 'Autre'];
             
-            sortedFormes.forEach(function(entry) {
-                const forme = entry[0];
-                const count = entry[1];
+            formeOrder.forEach(function(fam) {
+                const count = formeCounts[fam];
+                if (count === 0) return; // N'affiche pas les familles à 0
                 const chip = document.createElement('div');
                 chip.className = 'filter-chip';
                 chip.dataset.filter = 'forme';
-                chip.dataset.value = forme;
+                chip.dataset.value = fam;
                 chip.onclick = function() { toggleFilterChip(this); };
-                
-                let label = forme;
-                if (label.length > 30) label = label.substring(0, 28) + '...';
-                
-                chip.innerHTML = label + ' <span class="count">(' + count + ')</span>';
-                
-                if (activeFilters.forme.has(forme)) chip.classList.add('active');
-                
+                chip.innerHTML = fam + ' <span class="count">(' + count + ')</span>';
+                if (activeFilters.forme.has(fam)) chip.classList.add('active');
                 formeContainer.appendChild(chip);
             });
             
@@ -1781,11 +1822,13 @@
                 const csvText = await response.text();
                 companies = parseCSV(csvText);
                 
-                // Enrichissement : parser la commune et le CP depuis l'adresse
+                // Enrichissement : parser la commune et le CP depuis l'adresse,
+                // et classifier la forme juridique en famille métier
                 companies.forEach(function(c) {
                     var parsed = parseCommuneAndCP(c.address);
                     c._commune = parsed.commune;
                     c._cp = parsed.cp;
+                    c._formeFamille = classifyForme(c.forme);
                 });
                 
                 filteredCompanies = [...companies];
